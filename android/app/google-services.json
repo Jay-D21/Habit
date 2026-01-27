@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "416746728359",
+    "project_id": "habit-eb8a4",
+    "storage_bucket": "habit-eb8a4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:416746728359:android:a1759d8f1085b404faa482",
+        "android_client_info": {
+          "package_name": "com.example.habit"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "416746728359-1fpjpbbnlrngvap8ra7ci6hl1lauh6u4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyArvzaaXPFCNO1GY3gHcU3a7EoJGmHP_SA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "416746728359-1fpjpbbnlrngvap8ra7ci6hl1lauh6u4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:416746728359:android:1805302c432f06fefaa482",
+        "android_client_info": {
+          "package_name": "com.habittracker.habit_tracker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "416746728359-1fpjpbbnlrngvap8ra7ci6hl1lauh6u4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyArvzaaXPFCNO1GY3gHcU3a7EoJGmHP_SA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "416746728359-1fpjpbbnlrngvap8ra7ci6hl1lauh6u4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

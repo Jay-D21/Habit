@@ -1,0 +1,11 @@
+{
+  "AppSyncApiName": "loophabit",
+  "DynamoDBBillingMode": "PAY_PER_REQUEST",
+  "DynamoDBEnableServerSideEncryption": true,
+  "AuthCognitoUserPoolId": {
+    "Fn::GetAtt": [
+      "authloophabitd4800570",
+      "Outputs.UserPoolId"
+    ]
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-loophabit-dev-49544-authRole",
+      "UnauthRoleArn": "arn:aws:iam::690687753866:role/amplify-loophabit-dev-49544-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::690687753866:role/amplify-loophabit-dev-49544-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-loophabit-dev-49544-deployment",
+      "UnauthRoleName": "amplify-loophabit-dev-49544-unauthRole",
+      "StackName": "amplify-loophabit-dev-49544",
+      "StackId": "arn:aws:cloudformation:us-east-1:690687753866:stack/amplify-loophabit-dev-49544/c978fa20-f87b-11f0-8f23-0afff54654ad",
+      "AmplifyAppId": "d1r2q8dbu1sq41"
+    },
+    "categories": {
+      "auth": {
+        "loophabitd4800570": {}
+      },
+      "api": {
+        "loophabit": {}
+      }
+    }
+  }
+}

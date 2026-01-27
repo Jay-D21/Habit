@@ -1,0 +1,16 @@
+type Feedback @model @auth(rules: [{ allow: owner }]) {
+  id: ID!
+  message: String!
+  type: FeedbackType!
+  userEmail: String
+  userName: String
+  appVersion: String
+  platform: String
+  status: String
+}
+
+enum FeedbackType {
+  bugReport
+  featureRequest
+  feedback
+}
