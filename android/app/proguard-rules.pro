@@ -17,3 +17,18 @@
 
 # Keep Google Mobile Ads
 -keep class com.google.android.gms.ads.** { *; }
+
+# Keep Drift/SQLite classes (database)
+-keep class * extends com.google.common.util.concurrent.AbstractFuture { *; }
+-keepclassmembers class * extends drift.** { *; }
+
+# Keep Riverpod providers
+-keep class * extends riverpod.** { *; }
+-keepclassmembers class * {
+    @riverpod.annotation.* <methods>;
+}
+
+# Keep JSON serialization
+-keepclassmembers class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}

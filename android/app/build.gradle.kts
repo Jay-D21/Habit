@@ -38,7 +38,8 @@ android {
 
     buildTypes {
         release {
-            // Disabling minification to work around R8 issues with smart_auth plugin
+            // Disabled minification due to R8 conflicts with Google Credentials
+            // Size reduction achieved via split APKs instead
             isMinifyEnabled = false
             isShrinkResources = false
             // TODO: Add your own signing config for the release build.

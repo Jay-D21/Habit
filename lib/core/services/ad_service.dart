@@ -6,16 +6,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// AdMob Ad Unit IDs
 class AdConfig {
   // Production Ad Unit IDs
-  // static const String bannerAdUnitId = 'ca-app-pub-5797130278067710/5969721289';
-  // static const String interstitialAdUnitId =
-  //     'ca-app-pub-5797130278067710/1883330139';
-  // static const String nativeAdUnitId = 'ca-app-pub-5797130278067710/9908966293';
+  static const String bannerAdUnitId = 'ca-app-pub-5797130278067710/5969721289';
+  static const String interstitialAdUnitId =
+      'ca-app-pub-5797130278067710/1883330139';
+  static const String nativeAdUnitId = 'ca-app-pub-5797130278067710/9908966293';
 
   // Test Ad Unit IDs (uncomment for development)
-  static const String bannerAdUnitId = 'ca-app-pub-3940256099942544/6300978111';
-  static const String interstitialAdUnitId =
-      'ca-app-pub-3940256099942544/1033173712';
-  static const String nativeAdUnitId = 'ca-app-pub-3940256099942544/2247696110';
+  // static const String bannerAdUnitId = 'ca-app-pub-3940256099942544/6300978111';
+  // static const String interstitialAdUnitId =
+  //     'ca-app-pub-3940256099942544/1033173712';
+  // static const String nativeAdUnitId = 'ca-app-pub-3940256099942544/2247696110';
 }
 
 /// Initialize Mobile Ads SDK
