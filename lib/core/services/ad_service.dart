@@ -327,22 +327,26 @@ class BannerAdWidget extends ConsumerWidget {
     if (adState.isLoaded && adState.ad != null) {
       return Container(
         alignment: Alignment.center,
-        width: adState.ad!.size.width.toDouble(),
-        height: adState.ad!.size.height.toDouble(),
+        width: double.infinity,
+        height: 60, // Fixed height to prevent layout shifts
         decoration: BoxDecoration(
+          color: theme.scaffoldBackgroundColor, // Match background
           border: Border.all(
             color: theme.colorScheme.outline.withValues(alpha: 0.1),
           ),
-          borderRadius: BorderRadius.circular(4),
         ),
-        child: AdWidget(ad: adState.ad!),
+        child: SizedBox(
+          width: adState.ad!.size.width.toDouble(),
+          height: adState.ad!.size.height.toDouble(),
+          child: AdWidget(ad: adState.ad!),
+        ),
       );
     }
 
     // Error state - failed after max retries
     if (adState.hasError && adState.retryCount >= BannerAdNotifier.maxRetries) {
       return Container(
-        height: 50,
+        height: 60, // Fixed height
         alignment: Alignment.center,
         padding: const EdgeInsets.symmetric(horizontal: 8),
         decoration: BoxDecoration(
@@ -395,7 +399,7 @@ class BannerAdWidget extends ConsumerWidget {
 
     // Loading or retrying state
     return Container(
-      height: 50,
+      height: 60, // Fixed height matches other states
       alignment: Alignment.center,
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
