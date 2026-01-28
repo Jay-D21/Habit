@@ -33,12 +33,39 @@ final adsInitializedProvider = FutureProvider<bool>((ref) async {
 class BannerAdState {
   final BannerAd? ad;
   final bool isLoaded;
+  final bool hasError;
+  final int retryCount;
+  final String? errorMessage;
 
-  BannerAdState({this.ad, this.isLoaded = false});
+  BannerAdState({
+    this.ad,
+    this.isLoaded = false,
+    this.hasError = false,
+    this.retryCount = 0,
+    this.errorMessage,
+  });
+
+  BannerAdState copyWith({
+    BannerAd? ad,
+    bool? isLoaded,
+    bool? hasError,
+    int? retryCount,
+    String? errorMessage,
+  }) {
+    return BannerAdState(
+      ad: ad ?? this.ad,
+      isLoaded: isLoaded ?? this.isLoaded,
+      hasError: hasError ?? this.hasError,
+      retryCount: retryCount ?? this.retryCount,
+      errorMessage: errorMessage ?? this.errorMessage,
+    );
+  }
 }
 
-/// Banner Ad Notifier
+/// Banner Ad Notifier with Retry Logic
 class BannerAdNotifier extends Notifier<BannerAdState> {
+  static const int maxRetries = 3;
+
   @override
   BannerAdState build() {
     _loadAd();
@@ -46,6 +73,9 @@ class BannerAdNotifier extends Notifier<BannerAdState> {
   }
 
   void _loadAd() {
+    debugPrint(
+        '🎯 Loading banner ad (attempt ${state.retryCount + 1}/$maxRetries)...');
+
     final bannerAd = BannerAd(
       adUnitId: AdConfig.bannerAdUnitId,
       size: AdSize.banner,
@@ -53,17 +83,51 @@ class BannerAdNotifier extends Notifier<BannerAdState> {
       listener: BannerAdListener(
         onAdLoaded: (ad) {
           debugPrint('✅ Banner ad loaded successfully!');
-          state = BannerAdState(ad: ad as BannerAd, isLoaded: true);
+          state = BannerAdState(
+            ad: ad as BannerAd,
+            isLoaded: true,
+            hasError: false,
+            retryCount: 0,
+          );
         },
         onAdFailedToLoad: (ad, error) {
-          debugPrint('Banner ad failed to load: $error');
+          debugPrint(
+              '❌ Banner ad failed to load: ${error.message} (Code: ${error.code})');
           ad.dispose();
-          // Retry after 60 seconds
-          Future.delayed(const Duration(seconds: 60), _loadAd);
+
+          final newRetryCount = state.retryCount + 1;
+
+          if (newRetryCount < maxRetries) {
+            // Exponential backoff: 2s, 4s, 8s
+            final delaySeconds = 2 << (newRetryCount - 1); // 2^n
+            debugPrint('🔄 Retrying in ${delaySeconds}s...');
+
+            state = state.copyWith(
+              hasError: true,
+              retryCount: newRetryCount,
+              errorMessage: error.message,
+            );
+
+            Future.delayed(Duration(seconds: delaySeconds), _loadAd);
+          } else {
+            debugPrint('⛔ Max retries reached. Ad failed permanently.');
+            state = state.copyWith(
+              hasError: true,
+              retryCount: newRetryCount,
+              errorMessage: 'Failed after $maxRetries attempts',
+            );
+          }
         },
       ),
     );
     bannerAd.load();
+  }
+
+  /// Manual retry for user-triggered reload
+  void retry() {
+    debugPrint('🔄 Manual retry triggered...');
+    state = BannerAdState(); // Reset state
+    _loadAd();
   }
 
   void dispose() {
@@ -75,14 +139,19 @@ final bannerAdProvider = NotifierProvider<BannerAdNotifier, BannerAdState>(() {
   return BannerAdNotifier();
 });
 
-/// Interstitial Ad Manager
+/// Interstitial Ad Manager with Retry Logic
 class InterstitialAdManager {
   InterstitialAd? _interstitialAd;
   bool _isLoading = false;
+  int _retryCount = 0;
+  static const int maxRetries = 3;
 
   void loadAd() {
     if (_isLoading || _interstitialAd != null) return;
     _isLoading = true;
+
+    debugPrint(
+        '🎯 Loading interstitial ad (attempt ${_retryCount + 1}/$maxRetries)...');
 
     InterstitialAd.load(
       adUnitId: AdConfig.interstitialAdUnitId,
@@ -92,6 +161,7 @@ class InterstitialAdManager {
           debugPrint('✅ Interstitial ad loaded successfully!');
           _interstitialAd = ad;
           _isLoading = false;
+          _retryCount = 0; // Reset retry counter on success
           ad.fullScreenContentCallback = FullScreenContentCallback(
             onAdDismissedFullScreenContent: (ad) {
               debugPrint('📺 Interstitial ad dismissed');
@@ -100,7 +170,7 @@ class InterstitialAdManager {
               loadAd(); // Preload next ad
             },
             onAdFailedToShowFullScreenContent: (ad, error) {
-              debugPrint('❌ Interstitial failed to show: $error');
+              debugPrint('❌ Interstitial failed to show: ${error.message}');
               ad.dispose();
               _interstitialAd = null;
               loadAd();
@@ -108,10 +178,20 @@ class InterstitialAdManager {
           );
         },
         onAdFailedToLoad: (error) {
-          debugPrint('❌ Interstitial ad failed to load: $error');
+          debugPrint(
+              '❌ Interstitial ad failed to load: ${error.message} (Code: ${error.code})');
           _isLoading = false;
-          // Retry after 60 seconds
-          Future.delayed(const Duration(seconds: 60), loadAd);
+
+          if (_retryCount < maxRetries) {
+            _retryCount++;
+            // Exponential backoff: 2s, 4s, 8s
+            final delaySeconds = 2 << (_retryCount - 1);
+            debugPrint('🔄 Retrying interstitial in ${delaySeconds}s...');
+            Future.delayed(Duration(seconds: delaySeconds), loadAd);
+          } else {
+            debugPrint('⛔ Max retries reached for interstitial ad.');
+            _retryCount = 0; // Reset for next attempt later
+          }
         },
       ),
     );
@@ -124,8 +204,13 @@ class InterstitialAdManager {
       return false;
     }
     debugPrint('📺 Showing interstitial ad!');
-    await _interstitialAd!.show();
-    return true;
+    try {
+      await _interstitialAd!.show();
+      return true;
+    } catch (e) {
+      debugPrint('❌ Error showing interstitial: $e');
+      return false;
+    }
   }
 
   void dispose() {
@@ -238,27 +323,69 @@ class BannerAdWidget extends ConsumerWidget {
     final adState = ref.watch(bannerAdProvider);
     final theme = Theme.of(context);
 
-    if (!adState.isLoaded || adState.ad == null) {
-      // Show subtle loading container instead of empty space
+    // Successfully loaded ad
+    if (adState.isLoaded && adState.ad != null) {
+      return Container(
+        alignment: Alignment.center,
+        width: adState.ad!.size.width.toDouble(),
+        height: adState.ad!.size.height.toDouble(),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: theme.colorScheme.outline.withValues(alpha: 0.1),
+          ),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: AdWidget(ad: adState.ad!),
+      );
+    }
+
+    // Error state - failed after max retries
+    if (adState.hasError && adState.retryCount >= BannerAdNotifier.maxRetries) {
       return Container(
         height: 50,
         alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.errorContainer.withValues(alpha: 0.1),
+          border: Border.all(
+            color: theme.colorScheme.error.withValues(alpha: 0.2),
+          ),
+          borderRadius: BorderRadius.circular(4),
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(
-              width: 12,
-              height: 12,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
-              ),
+            Icon(
+              Icons.warning_amber_rounded,
+              size: 16,
+              color: theme.colorScheme.error.withValues(alpha: 0.6),
             ),
             const SizedBox(width: 8),
-            Text(
-              'Loading ad...',
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+            Expanded(
+              child: Text(
+                'Ad failed to load',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                ref.read(bannerAdProvider.notifier).retry();
+              },
+              style: TextButton.styleFrom(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: Text(
+                'Retry',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
@@ -266,11 +393,39 @@ class BannerAdWidget extends ConsumerWidget {
       );
     }
 
+    // Loading or retrying state
     return Container(
+      height: 50,
       alignment: Alignment.center,
-      width: adState.ad!.size.width.toDouble(),
-      height: adState.ad!.size.height.toDouble(),
-      child: AdWidget(ad: adState.ad!),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.1),
+        ),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 12,
+            height: 12,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            adState.hasError && adState.retryCount > 0
+                ? 'Retrying ad... (${adState.retryCount}/${BannerAdNotifier.maxRetries})'
+                : 'Loading ad...',
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

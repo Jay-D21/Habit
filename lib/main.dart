@@ -14,16 +14,34 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Firebase
-  await Firebase.initializeApp();
+  try {
+    await Firebase.initializeApp();
+    debugPrint('✅ Firebase initialized successfully');
+  } catch (e) {
+    debugPrint('❌ Firebase initialization failed: $e');
+  }
 
   // Initialize AWS Amplify
-  await configureAmplify();
+  try {
+    await configureAmplify();
+    debugPrint('✅ AWS Amplify configured successfully');
+  } catch (e) {
+    debugPrint('❌ AWS Amplify configuration failed: $e');
+  }
 
   // Initialize Drift database
   database = AppDatabase();
+  debugPrint('✅ Database initialized');
 
   // Initialize Mobile Ads SDK
-  await MobileAds.instance.initialize();
+  try {
+    final initStatus = await MobileAds.instance.initialize();
+    debugPrint('✅ AdMob SDK initialized successfully');
+    debugPrint('📊 AdMob Adapter Status: ${initStatus.adapterStatuses}');
+  } catch (e) {
+    debugPrint('❌ AdMob initialization failed: $e');
+    debugPrint('⚠️  Ads may not load properly');
+  }
 
   runApp(
     const ProviderScope(
