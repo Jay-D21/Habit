@@ -7,6 +7,7 @@ import '../../../app/theme/app_theme.dart';
 import '../../../../core/providers/habit_providers.dart';
 import '../data/models/habit.dart';
 import '../../home/presentation/widgets/today_habits_section.dart';
+import '../../../core/services/ad_service.dart';
 
 /// Habits screen with calendar view
 class HabitsScreen extends ConsumerStatefulWidget {
@@ -129,6 +130,12 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
             // Habits list with calendar
             Expanded(
               child: _HabitsList(selectedMonth: _selectedMonth),
+            ),
+
+            // Banner Ad
+            Padding(
+              padding: const EdgeInsets.all(AppTheme.spacingLg),
+              child: const BannerAdWidget(),
             ),
           ],
         ),

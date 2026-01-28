@@ -8,6 +8,7 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../main.dart'; // database global
 import '../../../core/providers/habit_providers.dart';
+import '../../../core/services/ad_service.dart';
 
 /// Watch for database changes to trigger updates
 final habitsTouchProvider =
@@ -260,6 +261,15 @@ class AnalyticsScreen extends ConsumerWidget {
                     const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
                 child: _buildDailyActivity(context, ref, isDark),
               ).animate().fadeIn(delay: 300.ms),
+
+              const SizedBox(height: AppTheme.spacingLg),
+
+              // Banner Ad
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
+                child: const BannerAdWidget(),
+              ).animate().fadeIn(delay: 350.ms),
 
               const SizedBox(height: 100),
             ],

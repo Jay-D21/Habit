@@ -145,7 +145,8 @@ final interstitialAdManagerProvider = Provider<InterstitialAdManager>((ref) {
 /// - Shows ad after every 2 habit completions
 /// - Shows ad on every 3rd or 4th app open
 class AdFrequencyManager extends Notifier<AdFrequencyState> {
-  static const int _habitsBeforeAd = 2;
+  static const int _habitsBeforeAd =
+      3; // Increased from 2 to 3 for less intrusion
   static const int _appOpensBeforeAd = 3;
 
   @override
@@ -235,9 +236,34 @@ class BannerAdWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final adState = ref.watch(bannerAdProvider);
+    final theme = Theme.of(context);
 
     if (!adState.isLoaded || adState.ad == null) {
-      return const SizedBox(height: 50); // Placeholder height
+      // Show subtle loading container instead of empty space
+      return Container(
+        height: 50,
+        alignment: Alignment.center,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 12,
+              height: 12,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'Loading ad...',
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+              ),
+            ),
+          ],
+        ),
+      );
     }
 
     return Container(

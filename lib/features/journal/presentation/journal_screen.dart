@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../../core/providers/journal_providers.dart';
+import '../../../core/services/ad_service.dart';
 
 /// Journal screen with entries list
 class JournalScreen extends ConsumerStatefulWidget {
@@ -152,6 +153,12 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
             // Content based on view
             Expanded(
               child: _buildContent(),
+            ),
+
+            // Banner Ad
+            Padding(
+              padding: const EdgeInsets.all(AppTheme.spacingLg),
+              child: const BannerAdWidget(),
             ),
           ],
         ),
