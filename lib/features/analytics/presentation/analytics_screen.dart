@@ -96,16 +96,25 @@ final topHabitsProvider = FutureProvider<List<TopHabit>>((ref) async {
   final startOfMonth = DateTime(now.year, now.month, 1);
   final daysPassed = now.day;
 
+  // OPTIMIZED: Fetch ALL completions for this month in ONE query
+  final allCompletions = await (database.select(database.habitCompletions)
+        ..where((c) => c.date.isBiggerOrEqualValue(startOfMonth))
+        ..where((c) => c.date.isSmallerOrEqualValue(now)))
+      .get();
+
+  // Group completions by habitId in memory
+  final completionsByHabit = <int, int>{};
+  for (final completion in allCompletions) {
+    completionsByHabit[completion.habitId] =
+        (completionsByHabit[completion.habitId] ?? 0) + 1;
+  }
+
   final List<TopHabit> topHabits = [];
   final repo = ref.read(habitRepositoryProvider);
 
+  // Now calculate stats for each habit using in-memory grouped data
   for (final habit in activeHabitsList) {
-    final completions = (await (database.select(database.habitCompletions)
-              ..where((c) => c.habitId.equals(habit.id))
-              ..where((c) => c.date.isBiggerOrEqualValue(startOfMonth))
-              ..where((c) => c.date.isSmallerOrEqualValue(now)))
-            .get())
-        .length;
+    final completions = completionsByHabit[habit.id] ?? 0;
 
     final rate =
         daysPassed > 0 ? (completions / daysPassed * 100).clamp(0, 100) : 0.0;
@@ -231,27 +240,21 @@ class AnalyticsScreen extends ConsumerWidget {
 
               const SizedBox(height: AppTheme.spacingLg),
 
-              // Monthly Progress + Top Habits
+              // Monthly Progress - Full Width
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Monthly Progress Chart
-                    Expanded(
-                      flex: 3,
-                      child: _buildMonthlyProgress(context, ref, isDark),
-                    ),
-                    const SizedBox(width: AppTheme.spacingMd),
-                    // Top Performing Habits
-                    Expanded(
-                      flex: 2,
-                      child: _buildTopHabits(context, ref, isDark),
-                    ),
-                  ],
-                ),
+                child: _buildMonthlyProgress(context, ref, isDark),
               ).animate().fadeIn(delay: 200.ms),
+
+              const SizedBox(height: AppTheme.spacingLg),
+
+              // Top Performing Habits - Full Width
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
+                child: _buildTopHabits(context, ref, isDark),
+              ).animate().fadeIn(delay: 250.ms),
 
               const SizedBox(height: AppTheme.spacingLg),
 
