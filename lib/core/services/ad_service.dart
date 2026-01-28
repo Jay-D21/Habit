@@ -68,59 +68,68 @@ class BannerAdNotifier extends Notifier<BannerAdState> {
 
   @override
   BannerAdState build() {
-    _loadAd();
+    // Defer loading to avoid blocking invalidation or synchronous errors
+    Future.microtask(() => _loadAd());
     return BannerAdState();
   }
 
   void _loadAd() {
-    debugPrint(
-        '🎯 Loading banner ad (attempt ${state.retryCount + 1}/$maxRetries)...');
+    try {
+      debugPrint(
+          '🎯 Loading banner ad (attempt ${state.retryCount + 1}/$maxRetries)...');
 
-    final bannerAd = BannerAd(
-      adUnitId: AdConfig.bannerAdUnitId,
-      size: AdSize.banner,
-      request: const AdRequest(),
-      listener: BannerAdListener(
-        onAdLoaded: (ad) {
-          debugPrint('✅ Banner ad loaded successfully!');
-          state = BannerAdState(
-            ad: ad as BannerAd,
-            isLoaded: true,
-            hasError: false,
-            retryCount: 0,
-          );
-        },
-        onAdFailedToLoad: (ad, error) {
-          debugPrint(
-              '❌ Banner ad failed to load: ${error.message} (Code: ${error.code})');
-          ad.dispose();
-
-          final newRetryCount = state.retryCount + 1;
-
-          if (newRetryCount < maxRetries) {
-            // Exponential backoff: 2s, 4s, 8s
-            final delaySeconds = 2 << (newRetryCount - 1); // 2^n
-            debugPrint('🔄 Retrying in ${delaySeconds}s...');
-
-            state = state.copyWith(
-              hasError: true,
-              retryCount: newRetryCount,
-              errorMessage: error.message,
+      final bannerAd = BannerAd(
+        adUnitId: AdConfig.bannerAdUnitId,
+        size: AdSize.banner,
+        request: const AdRequest(),
+        listener: BannerAdListener(
+          onAdLoaded: (ad) {
+            debugPrint('✅ Banner ad loaded successfully!');
+            state = BannerAdState(
+              ad: ad as BannerAd,
+              isLoaded: true,
+              hasError: false,
+              retryCount: 0,
             );
+          },
+          onAdFailedToLoad: (ad, error) {
+            debugPrint(
+                '❌ Banner ad failed to load: ${error.message} (Code: ${error.code})');
+            ad.dispose();
 
-            Future.delayed(Duration(seconds: delaySeconds), _loadAd);
-          } else {
-            debugPrint('⛔ Max retries reached. Ad failed permanently.');
-            state = state.copyWith(
-              hasError: true,
-              retryCount: newRetryCount,
-              errorMessage: 'Failed after $maxRetries attempts',
-            );
-          }
-        },
-      ),
-    );
-    bannerAd.load();
+            final newRetryCount = state.retryCount + 1;
+
+            if (newRetryCount < maxRetries) {
+              // Exponential backoff: 2s, 4s, 8s
+              final delaySeconds = 2 << (newRetryCount - 1); // 2^n
+              debugPrint('🔄 Retrying in ${delaySeconds}s...');
+
+              state = state.copyWith(
+                hasError: true,
+                retryCount: newRetryCount,
+                errorMessage: error.message,
+              );
+
+              Future.delayed(Duration(seconds: delaySeconds), _loadAd);
+            } else {
+              debugPrint('⛔ Max retries reached. Ad failed permanently.');
+              state = state.copyWith(
+                hasError: true,
+                retryCount: newRetryCount,
+                errorMessage: 'Failed after $maxRetries attempts',
+              );
+            }
+          },
+        ),
+      );
+      bannerAd.load();
+    } catch (e) {
+      debugPrint('❌ Error initializing banner ad: $e');
+      state = state.copyWith(
+        hasError: true,
+        errorMessage: 'Initialization error: $e',
+      );
+    }
   }
 
   /// Manual retry for user-triggered reload
