@@ -53,11 +53,23 @@ class TodayHabitsSection extends ConsumerWidget {
 
               return Column(
                 children: [
-                  ...habits.take(4).map((habit) => Padding(
-                        padding:
-                            const EdgeInsets.only(bottom: AppTheme.spacingSm),
-                        child: _HabitItem(habit: habit),
-                      )),
+                  // Scrollable habits list with max height
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxHeight: 400, // Max height before scrolling
+                    ),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: habits
+                            .map((habit) => Padding(
+                                  padding: const EdgeInsets.only(
+                                      bottom: AppTheme.spacingSm),
+                                  child: _HabitItem(habit: habit),
+                                ))
+                            .toList(),
+                      ),
+                    ),
+                  ),
 
                   const SizedBox(height: AppTheme.spacingLg),
 
