@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'widgets/greeting_header.dart';
 import 'widgets/streak_cards.dart';
 import 'widgets/today_habits_section.dart';
+import 'widgets/top_priority_section.dart';
 import 'widgets/motivational_quote_card.dart';
 import 'widgets/weekly_overview.dart';
 import 'widgets/daily_progress_chart.dart';
@@ -44,6 +45,14 @@ class HomeScreen extends ConsumerWidget {
                   .animate()
                   .fadeIn(duration: 400.ms, delay: 150.ms)
                   .slideY(begin: 0.1, end: 0),
+            ),
+
+            // Top Priority Section
+            SliverToBoxAdapter(
+              child: const Padding(
+                padding: EdgeInsets.only(top: 8),
+                child: TopPrioritySection(),
+              ),
             ),
 
             // Today's Habits Section
