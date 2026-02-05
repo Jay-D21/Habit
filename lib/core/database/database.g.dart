@@ -39,6 +39,14 @@ class $HabitsTable extends Habits with TableInfo<$HabitsTable, HabitEntity> {
   late final GeneratedColumn<int> category = GeneratedColumn<int>(
       'category', aliasedName, false,
       type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _priorityMeta =
+      const VerificationMeta('priority');
+  @override
+  late final GeneratedColumn<int> priority = GeneratedColumn<int>(
+      'priority', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(3));
   static const VerificationMeta _frequencyMeta =
       const VerificationMeta('frequency');
   @override
@@ -126,6 +134,7 @@ class $HabitsTable extends Habits with TableInfo<$HabitsTable, HabitEntity> {
         name,
         emoji,
         category,
+        priority,
         frequency,
         customDays,
         description,
@@ -168,6 +177,10 @@ class $HabitsTable extends Habits with TableInfo<$HabitsTable, HabitEntity> {
           category.isAcceptableOrUnknown(data['category']!, _categoryMeta));
     } else if (isInserting) {
       context.missing(_categoryMeta);
+    }
+    if (data.containsKey('priority')) {
+      context.handle(_priorityMeta,
+          priority.isAcceptableOrUnknown(data['priority']!, _priorityMeta));
     }
     if (data.containsKey('frequency')) {
       context.handle(_frequencyMeta,
@@ -250,6 +263,8 @@ class $HabitsTable extends Habits with TableInfo<$HabitsTable, HabitEntity> {
           .read(DriftSqlType.string, data['${effectivePrefix}emoji'])!,
       category: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}category'])!,
+      priority: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}priority'])!,
       frequency: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}frequency'])!,
       customDays: attachedDatabase.typeMapping
@@ -286,6 +301,7 @@ class HabitEntity extends DataClass implements Insertable<HabitEntity> {
   final String name;
   final String emoji;
   final int category;
+  final int priority;
   final int frequency;
   final String? customDays;
   final String? description;
@@ -302,6 +318,7 @@ class HabitEntity extends DataClass implements Insertable<HabitEntity> {
       required this.name,
       required this.emoji,
       required this.category,
+      required this.priority,
       required this.frequency,
       this.customDays,
       this.description,
@@ -320,6 +337,7 @@ class HabitEntity extends DataClass implements Insertable<HabitEntity> {
     map['name'] = Variable<String>(name);
     map['emoji'] = Variable<String>(emoji);
     map['category'] = Variable<int>(category);
+    map['priority'] = Variable<int>(priority);
     map['frequency'] = Variable<int>(frequency);
     if (!nullToAbsent || customDays != null) {
       map['custom_days'] = Variable<String>(customDays);
@@ -346,6 +364,7 @@ class HabitEntity extends DataClass implements Insertable<HabitEntity> {
       name: Value(name),
       emoji: Value(emoji),
       category: Value(category),
+      priority: Value(priority),
       frequency: Value(frequency),
       customDays: customDays == null && nullToAbsent
           ? const Value.absent()
@@ -374,6 +393,7 @@ class HabitEntity extends DataClass implements Insertable<HabitEntity> {
       name: serializer.fromJson<String>(json['name']),
       emoji: serializer.fromJson<String>(json['emoji']),
       category: serializer.fromJson<int>(json['category']),
+      priority: serializer.fromJson<int>(json['priority']),
       frequency: serializer.fromJson<int>(json['frequency']),
       customDays: serializer.fromJson<String?>(json['customDays']),
       description: serializer.fromJson<String?>(json['description']),
@@ -395,6 +415,7 @@ class HabitEntity extends DataClass implements Insertable<HabitEntity> {
       'name': serializer.toJson<String>(name),
       'emoji': serializer.toJson<String>(emoji),
       'category': serializer.toJson<int>(category),
+      'priority': serializer.toJson<int>(priority),
       'frequency': serializer.toJson<int>(frequency),
       'customDays': serializer.toJson<String?>(customDays),
       'description': serializer.toJson<String?>(description),
@@ -414,6 +435,7 @@ class HabitEntity extends DataClass implements Insertable<HabitEntity> {
           String? name,
           String? emoji,
           int? category,
+          int? priority,
           int? frequency,
           Value<String?> customDays = const Value.absent(),
           Value<String?> description = const Value.absent(),
@@ -430,6 +452,7 @@ class HabitEntity extends DataClass implements Insertable<HabitEntity> {
         name: name ?? this.name,
         emoji: emoji ?? this.emoji,
         category: category ?? this.category,
+        priority: priority ?? this.priority,
         frequency: frequency ?? this.frequency,
         customDays: customDays.present ? customDays.value : this.customDays,
         description: description.present ? description.value : this.description,
@@ -449,6 +472,7 @@ class HabitEntity extends DataClass implements Insertable<HabitEntity> {
       name: data.name.present ? data.name.value : this.name,
       emoji: data.emoji.present ? data.emoji.value : this.emoji,
       category: data.category.present ? data.category.value : this.category,
+      priority: data.priority.present ? data.priority.value : this.priority,
       frequency: data.frequency.present ? data.frequency.value : this.frequency,
       customDays:
           data.customDays.present ? data.customDays.value : this.customDays,
@@ -478,6 +502,7 @@ class HabitEntity extends DataClass implements Insertable<HabitEntity> {
           ..write('name: $name, ')
           ..write('emoji: $emoji, ')
           ..write('category: $category, ')
+          ..write('priority: $priority, ')
           ..write('frequency: $frequency, ')
           ..write('customDays: $customDays, ')
           ..write('description: $description, ')
@@ -499,6 +524,7 @@ class HabitEntity extends DataClass implements Insertable<HabitEntity> {
       name,
       emoji,
       category,
+      priority,
       frequency,
       customDays,
       description,
@@ -518,6 +544,7 @@ class HabitEntity extends DataClass implements Insertable<HabitEntity> {
           other.name == this.name &&
           other.emoji == this.emoji &&
           other.category == this.category &&
+          other.priority == this.priority &&
           other.frequency == this.frequency &&
           other.customDays == this.customDays &&
           other.description == this.description &&
@@ -536,6 +563,7 @@ class HabitsCompanion extends UpdateCompanion<HabitEntity> {
   final Value<String> name;
   final Value<String> emoji;
   final Value<int> category;
+  final Value<int> priority;
   final Value<int> frequency;
   final Value<String?> customDays;
   final Value<String?> description;
@@ -552,6 +580,7 @@ class HabitsCompanion extends UpdateCompanion<HabitEntity> {
     this.name = const Value.absent(),
     this.emoji = const Value.absent(),
     this.category = const Value.absent(),
+    this.priority = const Value.absent(),
     this.frequency = const Value.absent(),
     this.customDays = const Value.absent(),
     this.description = const Value.absent(),
@@ -569,6 +598,7 @@ class HabitsCompanion extends UpdateCompanion<HabitEntity> {
     required String name,
     required String emoji,
     required int category,
+    this.priority = const Value.absent(),
     required int frequency,
     this.customDays = const Value.absent(),
     this.description = const Value.absent(),
@@ -592,6 +622,7 @@ class HabitsCompanion extends UpdateCompanion<HabitEntity> {
     Expression<String>? name,
     Expression<String>? emoji,
     Expression<int>? category,
+    Expression<int>? priority,
     Expression<int>? frequency,
     Expression<String>? customDays,
     Expression<String>? description,
@@ -609,6 +640,7 @@ class HabitsCompanion extends UpdateCompanion<HabitEntity> {
       if (name != null) 'name': name,
       if (emoji != null) 'emoji': emoji,
       if (category != null) 'category': category,
+      if (priority != null) 'priority': priority,
       if (frequency != null) 'frequency': frequency,
       if (customDays != null) 'custom_days': customDays,
       if (description != null) 'description': description,
@@ -628,6 +660,7 @@ class HabitsCompanion extends UpdateCompanion<HabitEntity> {
       Value<String>? name,
       Value<String>? emoji,
       Value<int>? category,
+      Value<int>? priority,
       Value<int>? frequency,
       Value<String?>? customDays,
       Value<String?>? description,
@@ -644,6 +677,7 @@ class HabitsCompanion extends UpdateCompanion<HabitEntity> {
       name: name ?? this.name,
       emoji: emoji ?? this.emoji,
       category: category ?? this.category,
+      priority: priority ?? this.priority,
       frequency: frequency ?? this.frequency,
       customDays: customDays ?? this.customDays,
       description: description ?? this.description,
@@ -672,6 +706,9 @@ class HabitsCompanion extends UpdateCompanion<HabitEntity> {
     }
     if (category.present) {
       map['category'] = Variable<int>(category.value);
+    }
+    if (priority.present) {
+      map['priority'] = Variable<int>(priority.value);
     }
     if (frequency.present) {
       map['frequency'] = Variable<int>(frequency.value);
@@ -716,6 +753,7 @@ class HabitsCompanion extends UpdateCompanion<HabitEntity> {
           ..write('name: $name, ')
           ..write('emoji: $emoji, ')
           ..write('category: $category, ')
+          ..write('priority: $priority, ')
           ..write('frequency: $frequency, ')
           ..write('customDays: $customDays, ')
           ..write('description: $description, ')
@@ -2189,6 +2227,7 @@ typedef $$HabitsTableCreateCompanionBuilder = HabitsCompanion Function({
   required String name,
   required String emoji,
   required int category,
+  Value<int> priority,
   required int frequency,
   Value<String?> customDays,
   Value<String?> description,
@@ -2206,6 +2245,7 @@ typedef $$HabitsTableUpdateCompanionBuilder = HabitsCompanion Function({
   Value<String> name,
   Value<String> emoji,
   Value<int> category,
+  Value<int> priority,
   Value<int> frequency,
   Value<String?> customDays,
   Value<String?> description,
@@ -2262,6 +2302,9 @@ class $$HabitsTableFilterComposer
 
   ColumnFilters<int> get category => $composableBuilder(
       column: $table.category, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get priority => $composableBuilder(
+      column: $table.priority, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<int> get frequency => $composableBuilder(
       column: $table.frequency, builder: (column) => ColumnFilters(column));
@@ -2340,6 +2383,9 @@ class $$HabitsTableOrderingComposer
   ColumnOrderings<int> get category => $composableBuilder(
       column: $table.category, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<int> get priority => $composableBuilder(
+      column: $table.priority, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<int> get frequency => $composableBuilder(
       column: $table.frequency, builder: (column) => ColumnOrderings(column));
 
@@ -2396,6 +2442,9 @@ class $$HabitsTableAnnotationComposer
 
   GeneratedColumn<int> get category =>
       $composableBuilder(column: $table.category, builder: (column) => column);
+
+  GeneratedColumn<int> get priority =>
+      $composableBuilder(column: $table.priority, builder: (column) => column);
 
   GeneratedColumn<int> get frequency =>
       $composableBuilder(column: $table.frequency, builder: (column) => column);
@@ -2479,6 +2528,7 @@ class $$HabitsTableTableManager extends RootTableManager<
             Value<String> name = const Value.absent(),
             Value<String> emoji = const Value.absent(),
             Value<int> category = const Value.absent(),
+            Value<int> priority = const Value.absent(),
             Value<int> frequency = const Value.absent(),
             Value<String?> customDays = const Value.absent(),
             Value<String?> description = const Value.absent(),
@@ -2496,6 +2546,7 @@ class $$HabitsTableTableManager extends RootTableManager<
             name: name,
             emoji: emoji,
             category: category,
+            priority: priority,
             frequency: frequency,
             customDays: customDays,
             description: description,
@@ -2513,6 +2564,7 @@ class $$HabitsTableTableManager extends RootTableManager<
             required String name,
             required String emoji,
             required int category,
+            Value<int> priority = const Value.absent(),
             required int frequency,
             Value<String?> customDays = const Value.absent(),
             Value<String?> description = const Value.absent(),
@@ -2530,6 +2582,7 @@ class $$HabitsTableTableManager extends RootTableManager<
             name: name,
             emoji: emoji,
             category: category,
+            priority: priority,
             frequency: frequency,
             customDays: customDays,
             description: description,

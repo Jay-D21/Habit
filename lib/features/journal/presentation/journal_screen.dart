@@ -156,9 +156,9 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
             ),
 
             // Banner Ad
-            Padding(
-              padding: const EdgeInsets.all(AppTheme.spacingLg),
-              child: const BannerAdWidget(),
+            const Padding(
+              padding: EdgeInsets.all(AppTheme.spacingLg),
+              child: BannerAdWidget(),
             ),
           ],
         ),

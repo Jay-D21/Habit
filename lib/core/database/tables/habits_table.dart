@@ -7,6 +7,8 @@ class Habits extends Table {
   TextColumn get name => text().withLength(min: 1, max: 100)();
   TextColumn get emoji => text().withLength(min: 1, max: 10)();
   IntColumn get category => integer()(); // Enum as int
+  IntColumn get priority => integer().withDefault(
+      const Constant(3))(); // Enum as int (HabitPriority), default Medium
   IntColumn get frequency => integer()(); // Enum as int
   TextColumn get customDays => text().nullable()();
   TextColumn get description => text().nullable()();
