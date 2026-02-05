@@ -9,6 +9,8 @@ import '../../../../core/providers/habit_providers.dart';
 import '../../../../core/providers/habit_notifier.dart';
 import '../../../habits/data/models/habit.dart';
 import '../../../../core/services/ad_service.dart';
+import '../../../../core/models/priority_enum.dart';
+import '../../../../shared/widgets/priority_selector_widget.dart';
 
 /// Today's habits section with habit list
 class TodayHabitsSection extends ConsumerWidget {
@@ -267,6 +269,24 @@ class _HabitItemState extends ConsumerState<_HabitItem> {
                           : theme.colorScheme.onSurface,
                     ),
                   ),
+                  // Priority Stars
+                  if (HabitPriority.fromValue(widget.habit.priority).value > 1)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: List.generate(
+                          HabitPriority.fromValue(widget.habit.priority).value,
+                          (index) => Icon(
+                            Icons.star_rounded,
+                            size: 14,
+                            color:
+                                HabitPriority.fromValue(widget.habit.priority)
+                                    .color,
+                          ),
+                        ),
+                      ),
+                    ),
                   const SizedBox(height: 4),
                   if (hasProgress) ...[
                     Row(
@@ -542,6 +562,13 @@ class AddHabitSheetState extends ConsumerState<AddHabitSheet> {
             ),
             const SizedBox(height: AppTheme.spacingLg),
 
+            // Priority Selector
+            PrioritySelectorWidget(
+              selectedPriority: _selectedPriority,
+              onPriorityChanged: (p) => setState(() => _selectedPriority = p),
+            ),
+            const SizedBox(height: AppTheme.spacingLg),
+
             // Frequency dropdown
             Text(
               'Frequency',
@@ -642,6 +669,7 @@ class AddHabitSheetState extends ConsumerState<AddHabitSheet> {
           emoji: _selectedEmoji,
           category: _selectedCategory,
           frequency: _selectedFrequency,
+          priority: _selectedPriority.value, // Pass priority value
           colorHex: AppColors.categoryColors[_selectedCategory.index]
               .toARGB32()
               .toRadixString(16),

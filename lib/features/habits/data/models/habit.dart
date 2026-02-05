@@ -31,6 +31,7 @@ class HabitModel {
   final int targetCount;
   final String? reminderTime;
   final bool reminderEnabled;
+  final int priority;
   final int sortOrder;
   final bool isArchived;
   final DateTime createdAt;
@@ -48,6 +49,7 @@ class HabitModel {
     this.targetCount = 1,
     this.reminderTime,
     this.reminderEnabled = false,
+    this.priority = 3, // Default medium
     this.sortOrder = 0,
     this.isArchived = false,
     required this.createdAt,
@@ -73,6 +75,7 @@ class HabitModel {
     int? targetCount,
     String? reminderTime,
     bool? reminderEnabled,
+    int? priority,
     int? sortOrder,
     bool? isArchived,
     DateTime? createdAt,
@@ -90,6 +93,7 @@ class HabitModel {
       targetCount: targetCount ?? this.targetCount,
       reminderTime: reminderTime ?? this.reminderTime,
       reminderEnabled: reminderEnabled ?? this.reminderEnabled,
+      priority: priority ?? this.priority,
       sortOrder: sortOrder ?? this.sortOrder,
       isArchived: isArchived ?? this.isArchived,
       createdAt: createdAt ?? this.createdAt,
