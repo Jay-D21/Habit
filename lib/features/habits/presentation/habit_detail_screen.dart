@@ -288,6 +288,8 @@ class _EditHabitSheetState extends ConsumerState<_EditHabitSheet> {
   late TextEditingController _nameController;
   late String _selectedEmoji;
   late int _targetCount;
+  late bool _reminderEnabled;
+  TimeOfDay? _reminderTime;
 
   final _emojis = ['⭐', '🧘', '📚', '💪', '💧', '🏃', '✍️', '🎯', '💤', '🥗'];
 
@@ -297,6 +299,12 @@ class _EditHabitSheetState extends ConsumerState<_EditHabitSheet> {
     _nameController = TextEditingController(text: widget.habit.name);
     _selectedEmoji = widget.habit.emoji;
     _targetCount = widget.habit.targetCount;
+    _reminderEnabled = widget.habit.reminderEnabled;
+    if (widget.habit.reminderTime != null) {
+      final parts = widget.habit.reminderTime!.split(':');
+      _reminderTime =
+          TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+    }
   }
 
   @override
@@ -435,6 +443,60 @@ class _EditHabitSheetState extends ConsumerState<_EditHabitSheet> {
             ),
             const SizedBox(height: AppTheme.spacingXl),
 
+            // Notifications
+            Text(
+              'Reminders',
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SwitchListTile(
+              title: const Text('Enable Notifications'),
+              value: _reminderEnabled,
+              onChanged: (val) async {
+                if (val) {
+                  // Request permissions first
+                  final granted = await ref
+                      .read(notificationServiceProvider)
+                      .requestPermissions();
+                  if (!granted && context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Notification permissions denied')),
+                    );
+                    return;
+                  }
+                  // Set default time if null
+                  if (_reminderTime == null) {
+                    setState(() =>
+                        _reminderTime = const TimeOfDay(hour: 9, minute: 0));
+                  }
+                }
+                setState(() => _reminderEnabled = val);
+              },
+            ),
+            if (_reminderEnabled && _reminderTime != null)
+              ListTile(
+                title: const Text('Reminder Time'),
+                trailing: Text(
+                  _reminderTime!.format(context),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
+                  ),
+                ),
+                onTap: () async {
+                  final time = await showTimePicker(
+                    context: context,
+                    initialTime: _reminderTime!,
+                  );
+                  if (time != null) {
+                    setState(() => _reminderTime = time);
+                  }
+                },
+              ),
+            const SizedBox(height: AppTheme.spacingLg),
+
             // Save button
             SizedBox(
               width: double.infinity,
@@ -463,6 +525,10 @@ class _EditHabitSheetState extends ConsumerState<_EditHabitSheet> {
       name: name,
       emoji: _selectedEmoji,
       targetCount: _targetCount,
+      reminderEnabled: _reminderEnabled,
+      reminderTime: _reminderEnabled && _reminderTime != null
+          ? '${_reminderTime!.hour}:${_reminderTime!.minute.toString().padLeft(2, '0')}'
+          : null,
     );
 
     await ref.read(habitNotifierProvider.notifier).updateHabit(updatedHabit);
