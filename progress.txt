@@ -7,3 +7,4 @@ Phase 3: Added notification UI to AddHabitSheet and HabitDetailScreen (Edit Mode
 Phase 3: Fixed import issues in TodayHabitsSection
 Phase 3: Resolved duplicate import lint in TodayHabitsSection
 Phase 3: Complete
+Phase 2: Started GamificationService implementation (XP calculation)
