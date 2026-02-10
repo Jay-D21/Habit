@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/notification_service.dart';
+import '../services/gamification_service.dart';
 import 'habit_providers.dart';
+import 'gamification_providers.dart';
 import '../../features/habits/data/models/habit.dart';
 
 /// Notifier for managing habit operations
@@ -95,8 +97,24 @@ class HabitNotifier extends Notifier<void> {
   Future<void> completeHabit(int habitId, {String? note}) async {
     final repository = ref.read(habitRepositoryProvider);
     await repository.completeHabit(habitId, note: note);
+
+    // Award XP
+    final habit = await repository.getHabitById(habitId);
+    if (habit != null) {
+      final gamificationService = ref.read(gamificationServiceProvider);
+      // Determine if it adheres to streak (simplified for now)
+      final streak = await repository.calculateStreak(habitId);
+      final isStreakMaintain =
+          streak > 1; // If streak > 1, we maintained it (roughly)
+
+      await gamificationService.addXPForHabit(habit,
+          isStreakMaintain: isStreakMaintain);
+    }
+
     ref.invalidate(todayCompletionsProvider);
     ref.invalidate(overallStreakProvider);
+    // Invalidate user progress provider if it existed
+    ref.invalidate(userProgressProvider);
   }
 
   /// Uncomplete a habit for today
@@ -120,9 +138,14 @@ class HabitNotifier extends Notifier<void> {
   }
 }
 
-/// Provider for NotificationService
 final notificationServiceProvider = Provider<NotificationService>((ref) {
   return NotificationService();
+});
+
+/// Provider for GamificationService
+final gamificationServiceProvider = Provider<GamificationService>((ref) {
+  final db = ref.watch(databaseProvider);
+  return GamificationService(db);
 });
 
 /// Provider for habit operations
