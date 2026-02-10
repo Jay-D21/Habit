@@ -9,7 +9,9 @@ import '../../../../core/providers/habit_notifier.dart';
 import '../../../habits/data/models/habit.dart';
 import '../../../../core/models/priority_enum.dart';
 import '../../../../shared/widgets/priority_selector_widget.dart';
+import '../../../../shared/widgets/priority_selector_widget.dart';
 import '../../../habits/presentation/widgets/habit_card.dart';
+import '../../../../core/services/notification_service.dart';
 
 /// Today's habits section with habit list
 class TodayHabitsSection extends ConsumerWidget {
