@@ -6,12 +6,21 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'app/app.dart';
 import 'core/database/database.dart';
 import 'core/services/aws_auth_service.dart';
+import 'core/services/notification_service.dart';
 
 /// Global Drift database instance
 late AppDatabase database;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Notifications
+  try {
+    await NotificationService().init();
+    debugPrint('✅ Notification Service initialized successfully');
+  } catch (e) {
+    debugPrint('❌ Notification Service initialization failed: $e');
+  }
 
   // Initialize Firebase
   try {

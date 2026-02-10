@@ -1,4 +1,4 @@
 Phase 3: Started NotificationService implementation (initial setup)
 Phase 3: Added scheduleHabitNotification logic to NotificationService
 Phase 3: Refactored NotificationService to use HabitFrequency enum
-Phase 3: Added permission request logic to NotificationService
+Phase 3: Fixed permission request logic and initialized service in main
