@@ -53,13 +53,13 @@ updated: 2026-02-10
 ---
 
 ### Phase 3: Notification Scheduling
-**Status:** ⬜ Not Started
+**Status:** ✅ Complete
 **Objective:** reliable local reminders for habits.
 
 **Plans:**
-- [ ] Service: Notification Manager
-- [ ] Logic: Schedule based on habit time
-- [ ] UI: Permissions handling
+- [x] Service: Notification Manager
+- [x] Logic: Schedule based on habit time
+- [x] UI: Permissions handling
 
 ---
 
@@ -92,6 +92,6 @@ updated: 2026-02-10
 |-------|--------|-------|----------|
 | 1 | ✅ | 7/7 | 100% |
 | 2 | 🔄 | 0/6 | 0% |
-| 3 | ⬜ | 0/3 | 0% |
+| 3 | ✅ | 3/3 | 100% |
 | 4 | ⬜ | 0/4 | 0% |
 | 5 | ⬜ | 0/3 | 0% |
