@@ -44,8 +44,9 @@ updated: 2026-02-10
 
 **Plans:**
 - [x] Database: User Progress table
-- [ ] Service: Gamification logic (XP calcs)
-- [ ] UI: Level Progress Widget
+- [x] Service: Gamification logic (XP calcs)
+- [x] UI: Level Progress Widget (Header)
+- [ ] UI: Badges Screen
 - [ ] UI: Badges Screen
 - [ ] Feature: Badge unlocking logic
 - [ ] Feature: Priority-specific badges
@@ -91,7 +92,7 @@ updated: 2026-02-10
 | Phase | Status | Plans | Complete |
 |-------|--------|-------|----------|
 | 1 | ✅ | 7/7 | 100% |
-| 2 | 🔄 | 0/6 | 0% |
+| 2 | 🔄 | 3/6 | 50% |
 | 3 | ✅ | 3/3 | 100% |
 | 4 | ⬜ | 0/4 | 0% |
 | 5 | ⬜ | 0/3 | 0% |
