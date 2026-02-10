@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../core/models/priority_enum.dart';
-import '../../app/theme/app_theme.dart';
 
 class PrioritySelectorWidget extends StatelessWidget {
   final HabitPriority selectedPriority;

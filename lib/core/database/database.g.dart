@@ -2206,6 +2206,340 @@ class AchievementsCompanion extends UpdateCompanion<AchievementEntity> {
   }
 }
 
+class $UserProgressTable extends UserProgress
+    with TableInfo<$UserProgressTable, UserProgressEntity> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $UserProgressTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _emailMeta = const VerificationMeta('email');
+  @override
+  late final GeneratedColumn<String> email = GeneratedColumn<String>(
+      'email', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _xpMeta = const VerificationMeta('xp');
+  @override
+  late final GeneratedColumn<int> xp = GeneratedColumn<int>(
+      'xp', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _levelMeta = const VerificationMeta('level');
+  @override
+  late final GeneratedColumn<int> level = GeneratedColumn<int>(
+      'level', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(1));
+  static const VerificationMeta _joinDateMeta =
+      const VerificationMeta('joinDate');
+  @override
+  late final GeneratedColumn<DateTime> joinDate = GeneratedColumn<DateTime>(
+      'join_date', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _lastUpdatedMeta =
+      const VerificationMeta('lastUpdated');
+  @override
+  late final GeneratedColumn<DateTime> lastUpdated = GeneratedColumn<DateTime>(
+      'last_updated', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, email, xp, level, joinDate, lastUpdated];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'user_progress';
+  @override
+  VerificationContext validateIntegrity(Insertable<UserProgressEntity> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('email')) {
+      context.handle(
+          _emailMeta, email.isAcceptableOrUnknown(data['email']!, _emailMeta));
+    }
+    if (data.containsKey('xp')) {
+      context.handle(_xpMeta, xp.isAcceptableOrUnknown(data['xp']!, _xpMeta));
+    }
+    if (data.containsKey('level')) {
+      context.handle(
+          _levelMeta, level.isAcceptableOrUnknown(data['level']!, _levelMeta));
+    }
+    if (data.containsKey('join_date')) {
+      context.handle(_joinDateMeta,
+          joinDate.isAcceptableOrUnknown(data['join_date']!, _joinDateMeta));
+    } else if (isInserting) {
+      context.missing(_joinDateMeta);
+    }
+    if (data.containsKey('last_updated')) {
+      context.handle(
+          _lastUpdatedMeta,
+          lastUpdated.isAcceptableOrUnknown(
+              data['last_updated']!, _lastUpdatedMeta));
+    } else if (isInserting) {
+      context.missing(_lastUpdatedMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  UserProgressEntity map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return UserProgressEntity(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      email: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}email']),
+      xp: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}xp'])!,
+      level: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}level'])!,
+      joinDate: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}join_date'])!,
+      lastUpdated: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}last_updated'])!,
+    );
+  }
+
+  @override
+  $UserProgressTable createAlias(String alias) {
+    return $UserProgressTable(attachedDatabase, alias);
+  }
+}
+
+class UserProgressEntity extends DataClass
+    implements Insertable<UserProgressEntity> {
+  final int id;
+  final String? email;
+  final int xp;
+  final int level;
+  final DateTime joinDate;
+  final DateTime lastUpdated;
+  const UserProgressEntity(
+      {required this.id,
+      this.email,
+      required this.xp,
+      required this.level,
+      required this.joinDate,
+      required this.lastUpdated});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    if (!nullToAbsent || email != null) {
+      map['email'] = Variable<String>(email);
+    }
+    map['xp'] = Variable<int>(xp);
+    map['level'] = Variable<int>(level);
+    map['join_date'] = Variable<DateTime>(joinDate);
+    map['last_updated'] = Variable<DateTime>(lastUpdated);
+    return map;
+  }
+
+  UserProgressCompanion toCompanion(bool nullToAbsent) {
+    return UserProgressCompanion(
+      id: Value(id),
+      email:
+          email == null && nullToAbsent ? const Value.absent() : Value(email),
+      xp: Value(xp),
+      level: Value(level),
+      joinDate: Value(joinDate),
+      lastUpdated: Value(lastUpdated),
+    );
+  }
+
+  factory UserProgressEntity.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return UserProgressEntity(
+      id: serializer.fromJson<int>(json['id']),
+      email: serializer.fromJson<String?>(json['email']),
+      xp: serializer.fromJson<int>(json['xp']),
+      level: serializer.fromJson<int>(json['level']),
+      joinDate: serializer.fromJson<DateTime>(json['joinDate']),
+      lastUpdated: serializer.fromJson<DateTime>(json['lastUpdated']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'email': serializer.toJson<String?>(email),
+      'xp': serializer.toJson<int>(xp),
+      'level': serializer.toJson<int>(level),
+      'joinDate': serializer.toJson<DateTime>(joinDate),
+      'lastUpdated': serializer.toJson<DateTime>(lastUpdated),
+    };
+  }
+
+  UserProgressEntity copyWith(
+          {int? id,
+          Value<String?> email = const Value.absent(),
+          int? xp,
+          int? level,
+          DateTime? joinDate,
+          DateTime? lastUpdated}) =>
+      UserProgressEntity(
+        id: id ?? this.id,
+        email: email.present ? email.value : this.email,
+        xp: xp ?? this.xp,
+        level: level ?? this.level,
+        joinDate: joinDate ?? this.joinDate,
+        lastUpdated: lastUpdated ?? this.lastUpdated,
+      );
+  UserProgressEntity copyWithCompanion(UserProgressCompanion data) {
+    return UserProgressEntity(
+      id: data.id.present ? data.id.value : this.id,
+      email: data.email.present ? data.email.value : this.email,
+      xp: data.xp.present ? data.xp.value : this.xp,
+      level: data.level.present ? data.level.value : this.level,
+      joinDate: data.joinDate.present ? data.joinDate.value : this.joinDate,
+      lastUpdated:
+          data.lastUpdated.present ? data.lastUpdated.value : this.lastUpdated,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UserProgressEntity(')
+          ..write('id: $id, ')
+          ..write('email: $email, ')
+          ..write('xp: $xp, ')
+          ..write('level: $level, ')
+          ..write('joinDate: $joinDate, ')
+          ..write('lastUpdated: $lastUpdated')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, email, xp, level, joinDate, lastUpdated);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is UserProgressEntity &&
+          other.id == this.id &&
+          other.email == this.email &&
+          other.xp == this.xp &&
+          other.level == this.level &&
+          other.joinDate == this.joinDate &&
+          other.lastUpdated == this.lastUpdated);
+}
+
+class UserProgressCompanion extends UpdateCompanion<UserProgressEntity> {
+  final Value<int> id;
+  final Value<String?> email;
+  final Value<int> xp;
+  final Value<int> level;
+  final Value<DateTime> joinDate;
+  final Value<DateTime> lastUpdated;
+  const UserProgressCompanion({
+    this.id = const Value.absent(),
+    this.email = const Value.absent(),
+    this.xp = const Value.absent(),
+    this.level = const Value.absent(),
+    this.joinDate = const Value.absent(),
+    this.lastUpdated = const Value.absent(),
+  });
+  UserProgressCompanion.insert({
+    this.id = const Value.absent(),
+    this.email = const Value.absent(),
+    this.xp = const Value.absent(),
+    this.level = const Value.absent(),
+    required DateTime joinDate,
+    required DateTime lastUpdated,
+  })  : joinDate = Value(joinDate),
+        lastUpdated = Value(lastUpdated);
+  static Insertable<UserProgressEntity> custom({
+    Expression<int>? id,
+    Expression<String>? email,
+    Expression<int>? xp,
+    Expression<int>? level,
+    Expression<DateTime>? joinDate,
+    Expression<DateTime>? lastUpdated,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (email != null) 'email': email,
+      if (xp != null) 'xp': xp,
+      if (level != null) 'level': level,
+      if (joinDate != null) 'join_date': joinDate,
+      if (lastUpdated != null) 'last_updated': lastUpdated,
+    });
+  }
+
+  UserProgressCompanion copyWith(
+      {Value<int>? id,
+      Value<String?>? email,
+      Value<int>? xp,
+      Value<int>? level,
+      Value<DateTime>? joinDate,
+      Value<DateTime>? lastUpdated}) {
+    return UserProgressCompanion(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      xp: xp ?? this.xp,
+      level: level ?? this.level,
+      joinDate: joinDate ?? this.joinDate,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (email.present) {
+      map['email'] = Variable<String>(email.value);
+    }
+    if (xp.present) {
+      map['xp'] = Variable<int>(xp.value);
+    }
+    if (level.present) {
+      map['level'] = Variable<int>(level.value);
+    }
+    if (joinDate.present) {
+      map['join_date'] = Variable<DateTime>(joinDate.value);
+    }
+    if (lastUpdated.present) {
+      map['last_updated'] = Variable<DateTime>(lastUpdated.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UserProgressCompanion(')
+          ..write('id: $id, ')
+          ..write('email: $email, ')
+          ..write('xp: $xp, ')
+          ..write('level: $level, ')
+          ..write('joinDate: $joinDate, ')
+          ..write('lastUpdated: $lastUpdated')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2214,12 +2548,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $HabitCompletionsTable(this);
   late final $JournalEntriesTable journalEntries = $JournalEntriesTable(this);
   late final $AchievementsTable achievements = $AchievementsTable(this);
+  late final $UserProgressTable userProgress = $UserProgressTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [habits, habitCompletions, journalEntries, achievements];
+      [habits, habitCompletions, journalEntries, achievements, userProgress];
 }
 
 typedef $$HabitsTableCreateCompanionBuilder = HabitsCompanion Function({
@@ -3442,6 +3777,188 @@ typedef $$AchievementsTableProcessedTableManager = ProcessedTableManager<
     ),
     AchievementEntity,
     PrefetchHooks Function()>;
+typedef $$UserProgressTableCreateCompanionBuilder = UserProgressCompanion
+    Function({
+  Value<int> id,
+  Value<String?> email,
+  Value<int> xp,
+  Value<int> level,
+  required DateTime joinDate,
+  required DateTime lastUpdated,
+});
+typedef $$UserProgressTableUpdateCompanionBuilder = UserProgressCompanion
+    Function({
+  Value<int> id,
+  Value<String?> email,
+  Value<int> xp,
+  Value<int> level,
+  Value<DateTime> joinDate,
+  Value<DateTime> lastUpdated,
+});
+
+class $$UserProgressTableFilterComposer
+    extends Composer<_$AppDatabase, $UserProgressTable> {
+  $$UserProgressTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get email => $composableBuilder(
+      column: $table.email, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get xp => $composableBuilder(
+      column: $table.xp, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get level => $composableBuilder(
+      column: $table.level, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get joinDate => $composableBuilder(
+      column: $table.joinDate, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get lastUpdated => $composableBuilder(
+      column: $table.lastUpdated, builder: (column) => ColumnFilters(column));
+}
+
+class $$UserProgressTableOrderingComposer
+    extends Composer<_$AppDatabase, $UserProgressTable> {
+  $$UserProgressTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get email => $composableBuilder(
+      column: $table.email, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get xp => $composableBuilder(
+      column: $table.xp, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get level => $composableBuilder(
+      column: $table.level, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get joinDate => $composableBuilder(
+      column: $table.joinDate, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get lastUpdated => $composableBuilder(
+      column: $table.lastUpdated, builder: (column) => ColumnOrderings(column));
+}
+
+class $$UserProgressTableAnnotationComposer
+    extends Composer<_$AppDatabase, $UserProgressTable> {
+  $$UserProgressTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get email =>
+      $composableBuilder(column: $table.email, builder: (column) => column);
+
+  GeneratedColumn<int> get xp =>
+      $composableBuilder(column: $table.xp, builder: (column) => column);
+
+  GeneratedColumn<int> get level =>
+      $composableBuilder(column: $table.level, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get joinDate =>
+      $composableBuilder(column: $table.joinDate, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastUpdated => $composableBuilder(
+      column: $table.lastUpdated, builder: (column) => column);
+}
+
+class $$UserProgressTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $UserProgressTable,
+    UserProgressEntity,
+    $$UserProgressTableFilterComposer,
+    $$UserProgressTableOrderingComposer,
+    $$UserProgressTableAnnotationComposer,
+    $$UserProgressTableCreateCompanionBuilder,
+    $$UserProgressTableUpdateCompanionBuilder,
+    (
+      UserProgressEntity,
+      BaseReferences<_$AppDatabase, $UserProgressTable, UserProgressEntity>
+    ),
+    UserProgressEntity,
+    PrefetchHooks Function()> {
+  $$UserProgressTableTableManager(_$AppDatabase db, $UserProgressTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$UserProgressTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$UserProgressTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$UserProgressTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String?> email = const Value.absent(),
+            Value<int> xp = const Value.absent(),
+            Value<int> level = const Value.absent(),
+            Value<DateTime> joinDate = const Value.absent(),
+            Value<DateTime> lastUpdated = const Value.absent(),
+          }) =>
+              UserProgressCompanion(
+            id: id,
+            email: email,
+            xp: xp,
+            level: level,
+            joinDate: joinDate,
+            lastUpdated: lastUpdated,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String?> email = const Value.absent(),
+            Value<int> xp = const Value.absent(),
+            Value<int> level = const Value.absent(),
+            required DateTime joinDate,
+            required DateTime lastUpdated,
+          }) =>
+              UserProgressCompanion.insert(
+            id: id,
+            email: email,
+            xp: xp,
+            level: level,
+            joinDate: joinDate,
+            lastUpdated: lastUpdated,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$UserProgressTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $UserProgressTable,
+    UserProgressEntity,
+    $$UserProgressTableFilterComposer,
+    $$UserProgressTableOrderingComposer,
+    $$UserProgressTableAnnotationComposer,
+    $$UserProgressTableCreateCompanionBuilder,
+    $$UserProgressTableUpdateCompanionBuilder,
+    (
+      UserProgressEntity,
+      BaseReferences<_$AppDatabase, $UserProgressTable, UserProgressEntity>
+    ),
+    UserProgressEntity,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -3454,4 +3971,6 @@ class $AppDatabaseManager {
       $$JournalEntriesTableTableManager(_db, _db.journalEntries);
   $$AchievementsTableTableManager get achievements =>
       $$AchievementsTableTableManager(_db, _db.achievements);
+  $$UserProgressTableTableManager get userProgress =>
+      $$UserProgressTableTableManager(_db, _db.userProgress);
 }

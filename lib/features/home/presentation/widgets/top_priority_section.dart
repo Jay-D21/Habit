@@ -36,7 +36,8 @@ class TopPrioritySection extends ConsumerWidget {
             children: [
               Row(
                 children: [
-                  Icon(Icons.stars_rounded, color: Colors.orange, size: 20),
+                  const Icon(Icons.stars_rounded,
+                      color: Colors.orange, size: 20),
                   const SizedBox(width: 8),
                   Text(
                     'Top Priority Today',

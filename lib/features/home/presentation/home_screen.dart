@@ -48,8 +48,8 @@ class HomeScreen extends ConsumerWidget {
             ),
 
             // Top Priority Section
-            SliverToBoxAdapter(
-              child: const Padding(
+            const SliverToBoxAdapter(
+              child: Padding(
                 padding: EdgeInsets.only(top: 8),
                 child: TopPrioritySection(),
               ),

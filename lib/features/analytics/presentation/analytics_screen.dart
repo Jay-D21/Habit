@@ -269,8 +269,7 @@ class AnalyticsScreen extends ConsumerWidget {
 
               // Banner Ad
               const Padding(
-                padding:
-                    EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
+                padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
                 child: BannerAdWidget(),
               ).animate().fadeIn(delay: 350.ms),
 

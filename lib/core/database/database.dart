@@ -8,16 +8,23 @@ import 'package:path/path.dart' as p;
 import 'tables/habits_table.dart';
 import 'tables/journal_entries_table.dart';
 import 'tables/achievements_table.dart';
+import 'tables/user_progress_table.dart';
 
 part 'database.g.dart';
 
 /// Main application database using Drift (SQLite)
-@DriftDatabase(tables: [Habits, HabitCompletions, JournalEntries, Achievements])
+@DriftDatabase(tables: [
+  Habits,
+  HabitCompletions,
+  JournalEntries,
+  Achievements,
+  UserProgress
+])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -26,6 +33,10 @@ class AppDatabase extends _$AppDatabase {
           if (from < 2) {
             // Add priority column with default value (3 - Medium)
             await m.addColumn(habits, habits.priority);
+          }
+          if (from < 3) {
+            // Add UserProgress table
+            await m.createTable(userProgress);
           }
         },
       );
@@ -214,6 +225,23 @@ class AppDatabase extends _$AppDatabase {
   Future<List<AchievementEntity>> getUnlockedAchievements() {
     return (select(achievements)..where((a) => a.isUnlocked.equals(true)))
         .get();
+  }
+
+  // ============ USER PROGRESS QUERIES ============
+
+  /// Get user progress (should only be one entry usually)
+  Future<UserProgressEntity?> getUserProgress() {
+    return select(userProgress).getSingleOrNull();
+  }
+
+  /// Insert user progress
+  Future<int> insertUserProgress(UserProgressCompanion progress) {
+    return into(userProgress).insert(progress);
+  }
+
+  /// Update user progress
+  Future<bool> updateUserProgress(UserProgressEntity progress) {
+    return update(userProgress).replace(progress);
   }
 }
 
