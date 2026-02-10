@@ -3,8 +3,11 @@ import 'package:intl/intl.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_theme.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/providers/gamification_providers.dart';
+
 /// Greeting header with time-based greeting and motivational quote
-class GreetingHeader extends StatelessWidget {
+class GreetingHeader extends ConsumerWidget {
   const GreetingHeader({super.key});
 
   String _getGreeting() {
@@ -37,9 +40,10 @@ class GreetingHeader extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final today = DateFormat('EEEE, MMMM d').format(DateTime.now());
+    final userProgressAsync = ref.watch(userProgressProvider);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -70,6 +74,58 @@ class GreetingHeader extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: AppTheme.spacingXs),
+
+          // User Level & XP
+          userProgressAsync.when(
+            data: (progress) {
+              if (progress == null) return const SizedBox.shrink();
+              return Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppTheme.spacingSm,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.accent.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                      border: Border.all(
+                        color: AppColors.accent.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.insights_rounded,
+                          size: 16,
+                          color: AppColors.accent,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Lvl ${progress.level}',
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.accent,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: AppTheme.spacingSm),
+                  Text(
+                    '${progress.xp} XP',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ],
+              );
+            },
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
           ),
           const SizedBox(height: AppTheme.spacingSm),
 

@@ -10,3 +10,4 @@ Phase 3: Complete
 Phase 2: Started GamificationService implementation (XP calculation)
 Phase 2: Integrated GamificationService into HabitNotifier
 Phase 2: Created gamification_providers.dart
+Phase 2: Added XP/Level display to GreetingHeader
