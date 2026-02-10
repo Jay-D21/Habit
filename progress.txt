@@ -1,3 +1,4 @@
 Phase 2: Created GamificationService (XP/Level calculations)
 Phase 2: Created LevelProgressCard widget
 Phase 2: Created BadgesScreen and BadgeItem widget
+Phase 2: Created AchievementService (unlock logic)
