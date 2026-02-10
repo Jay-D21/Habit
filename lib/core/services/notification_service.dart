@@ -1,6 +1,7 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import '../../features/habits/data/models/habit.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -73,8 +74,7 @@ class NotificationService {
     required int habitId,
     required String habitName,
     required String reminderTime,
-    required dynamic
-        frequency, // Changed to dynamic to avoid enum import here if possible, but specific type is better
+    required HabitFrequency frequency,
     List<int>? customDays,
   }) async {
     final timeParts = reminderTime.split(':');
@@ -139,7 +139,7 @@ class NotificationService {
     // Standard Daily (simple daily repeat)
     // We use a different ID convention for simple daily: habitId * 10
 
-    if (frequency.toString().contains('daily')) {
+    if (frequency == HabitFrequency.daily) {
       await flutterLocalNotificationsPlugin.zonedSchedule(
         habitId * 10,
         'Time to $habitName!',
@@ -164,18 +164,18 @@ class NotificationService {
     }
 
     // Weekdays (Mon=1 to Fri=5)
-    else if (frequency.toString().contains('weekdays')) {
+    else if (frequency == HabitFrequency.weekdays) {
       for (int i = 1; i <= 5; i++) {
         await scheduleForDay(i);
       }
     }
     // Weekends (Sat=6, Sun=7)
-    else if (frequency.toString().contains('weekends')) {
+    else if (frequency == HabitFrequency.weekends) {
       await scheduleForDay(6);
       await scheduleForDay(7);
     }
     // Custom
-    else if (frequency.toString().contains('custom') && customDays != null) {
+    else if (frequency == HabitFrequency.custom && customDays != null) {
       for (int day in customDays) {
         await scheduleForDay(day);
       }

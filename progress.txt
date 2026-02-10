@@ -1,2 +1,3 @@
 Phase 3: Started NotificationService implementation (initial setup)
 Phase 3: Added scheduleHabitNotification logic to NotificationService
+Phase 3: Refactored NotificationService to use HabitFrequency enum
