@@ -6,6 +6,7 @@ enum AchievementType {
   perfectDay, // Perfect day achievements
   totalCompletions, // Total habit completions
   milestone, // Milestone achievements
+  priority, // Priority-specific habit completions
 }
 
 /// Achievement model class (pure Dart, no Isar dependencies)

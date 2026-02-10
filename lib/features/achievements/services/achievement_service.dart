@@ -59,6 +59,24 @@ class AchievementService {
         targetValue: const Value(10),
         xpReward: const Value(500),
       ),
+      AchievementsCompanion(
+        key: const Value('critical_hit'),
+        name: const Value('Critical Hit'),
+        description: const Value('Complete your first Critical priority habit'),
+        icon: const Value('🚨'),
+        type: Value(AchievementType.priority.index),
+        targetValue: const Value(1),
+        xpReward: const Value(50),
+      ),
+      AchievementsCompanion(
+        key: const Value('high_flyer'),
+        name: const Value('High Flyer'),
+        description: const Value('Complete 50 High priority habits'),
+        icon: const Value('🦅'),
+        type: Value(AchievementType.priority.index),
+        targetValue: const Value(50),
+        xpReward: const Value(200),
+      ),
     ];
 
     for (var achievement in defaults) {
