@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../app/theme/app_colors.dart';
@@ -8,7 +7,6 @@ import '../../../../app/theme/app_theme.dart';
 import '../../../../core/providers/habit_providers.dart';
 import '../../../../core/providers/habit_notifier.dart';
 import '../../../habits/data/models/habit.dart';
-import '../../../../core/services/ad_service.dart';
 import '../../../../core/models/priority_enum.dart';
 import '../../../../shared/widgets/priority_selector_widget.dart';
 import '../../../habits/presentation/widgets/habit_card.dart';
@@ -180,6 +178,7 @@ class AddHabitSheetState extends ConsumerState<AddHabitSheet> {
   String _selectedEmoji = '⭐';
   HabitCategory _selectedCategory = HabitCategory.personal;
   HabitFrequency _selectedFrequency = HabitFrequency.daily;
+  HabitPriority _selectedPriority = HabitPriority.medium;
   int _targetCount = 1;
 
   // 50+ emojis organized by category

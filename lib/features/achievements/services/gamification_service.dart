@@ -4,6 +4,8 @@ import '../../../core/models/priority_enum.dart';
 /// Service responsible for handling Gamification logic,
 /// including XP calculations, leveling systems, and progress tracking.
 class GamificationService {
+  const GamificationService();
+
   // Base XP gained for completing a single habit instance
   static const int _baseXp = 10;
 

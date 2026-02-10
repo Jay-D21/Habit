@@ -92,7 +92,7 @@ class PrioritySelectorWidget extends StatelessWidget {
                       '${selectedPriority.label} · ${selectedPriority.xpMultiplier}x XP Reward',
                       style: theme.textTheme.labelMedium?.copyWith(
                         color: selectedPriority.color
-                            .withOpacity(0.9), // Slightly darker for text
+                            .withValues(alpha: 0.9), // Slightly darker for text
                         fontWeight: FontWeight.w600,
                       ),
                     ),

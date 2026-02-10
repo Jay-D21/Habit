@@ -3,9 +3,9 @@ import '../../services/gamification_service.dart';
 
 class LevelProgressCard extends StatelessWidget {
   final int currentXp;
-  final GamificationService _gamificationService = GamificationService();
+  final GamificationService _gamificationService = const GamificationService();
 
-  LevelProgressCard({
+  const LevelProgressCard({
     super.key,
     required this.currentXp,
   });
@@ -58,9 +58,9 @@ class LevelProgressCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
+                    const Text(
                       'Habit Master', // Placeholder title
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
@@ -71,7 +71,7 @@ class LevelProgressCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(

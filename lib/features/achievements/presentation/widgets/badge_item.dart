@@ -20,8 +20,8 @@ class BadgeItem extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: achievement.isUnlocked
-                ? Colors.amber.withOpacity(0.2)
-                : Colors.grey.withOpacity(0.1),
+                ? Colors.amber.withValues(alpha: 0.2)
+                : Colors.grey.withValues(alpha: 0.1),
             border: Border.all(
               color: achievement.isUnlocked ? Colors.amber : Colors.grey,
               width: 2,
@@ -29,7 +29,7 @@ class BadgeItem extends StatelessWidget {
             boxShadow: achievement.isUnlocked
                 ? [
                     BoxShadow(
-                      color: Colors.amber.withOpacity(0.3),
+                      color: Colors.amber.withValues(alpha: 0.3),
                       blurRadius: 8,
                       spreadRadius: 2,
                     )
