@@ -12,6 +12,7 @@ class MotivationalQuoteCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final quote = ref.watch(dailyQuoteProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
@@ -19,50 +20,60 @@ class MotivationalQuoteCard extends ConsumerWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(AppTheme.spacingLg),
         decoration: BoxDecoration(
-          color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-          border: Border.all(
-            color: isDark ? AppColors.borderDark : AppColors.borderLight,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: isDark
+                ? [
+                    AppColors.primary.withValues(alpha: 0.15),
+                    AppColors.primaryDark.withValues(alpha: 0.08),
+                  ]
+                : [
+                    AppColors.primaryContainer.withValues(alpha: 0.4),
+                    AppColors.primary.withValues(alpha: 0.05),
+                  ],
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+          border: Border.all(
+            color: AppColors.primary.withValues(alpha: isDark ? 0.2 : 0.1),
+          ),
         ),
-        child: Column(
+        child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(
+            Icon(
               Icons.format_quote_rounded,
-              color: AppColors.primary,
-              size: 32,
+              color: AppColors.primary.withValues(alpha: 0.6),
+              size: 24,
             ),
-            const SizedBox(height: AppTheme.spacingMd),
-            Text(
-              quote.text,
-              style: GoogleFonts.merriweather(
-                fontSize: 16,
-                fontStyle: FontStyle.italic,
-                height: 1.5,
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.9)
-                    : Colors.black87,
-              ),
-            ),
-            const SizedBox(height: AppTheme.spacingMd),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                "- ${quote.author}",
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+            const SizedBox(width: AppTheme.spacingSm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    quote.text,
+                    style: GoogleFonts.merriweather(
+                      fontSize: 13,
+                      fontStyle: FontStyle.italic,
+                      height: 1.4,
                       color: isDark
-                          ? Colors.white.withValues(alpha: 0.6)
-                          : Colors.black54,
-                      fontWeight: FontWeight.bold,
+                          ? Colors.white.withValues(alpha: 0.85)
+                          : Colors.black87,
                     ),
+                  ),
+                  const SizedBox(height: AppTheme.spacingXs),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      "— ${quote.author}",
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: AppColors.primary.withValues(alpha: 0.7),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

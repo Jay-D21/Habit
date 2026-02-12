@@ -513,14 +513,16 @@ class _TilesView extends ConsumerWidget {
                         Icon(
                           Icons.mic_rounded,
                           size: 12,
-                          color: theme.colorScheme.onSurface.withOpacity(0.5),
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.5),
                         ),
                         const SizedBox(width: 4),
                         Text(
                           'Voice Note',
                           style: theme.textTheme.labelSmall?.copyWith(
                             fontSize: 10,
-                            color: theme.colorScheme.onSurface.withOpacity(0.5),
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.5),
                           ),
                         ),
                       ],
@@ -617,7 +619,7 @@ class _ListView extends ConsumerWidget {
                                 Icons.mic_rounded,
                                 size: 14,
                                 color: theme.colorScheme.onSurface
-                                    .withOpacity(0.5),
+                                    .withValues(alpha: 0.5),
                               ),
                               const SizedBox(width: 4),
                               Text(
@@ -625,29 +627,7 @@ class _ListView extends ConsumerWidget {
                                 style: theme.textTheme.labelSmall?.copyWith(
                                   fontSize: 11,
                                   color: theme.colorScheme.onSurface
-                                      .withOpacity(0.5),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                        if (entry.hasVoiceNote) ...[
-                          const SizedBox(height: AppTheme.spacingXs),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.mic_rounded,
-                                size: 14,
-                                color: theme.colorScheme.onSurface
-                                    .withOpacity(0.5),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Voice Note',
-                                style: theme.textTheme.labelSmall?.copyWith(
-                                  fontSize: 11,
-                                  color: theme.colorScheme.onSurface
-                                      .withOpacity(0.5),
+                                      .withValues(alpha: 0.5),
                                 ),
                               ),
                             ],

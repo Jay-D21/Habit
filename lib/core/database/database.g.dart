@@ -2540,6 +2540,432 @@ class UserProgressCompanion extends UpdateCompanion<UserProgressEntity> {
   }
 }
 
+class $FocusSettingsTable extends FocusSettings
+    with TableInfo<$FocusSettingsTable, FocusSettingsData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FocusSettingsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _focusDurationMeta =
+      const VerificationMeta('focusDuration');
+  @override
+  late final GeneratedColumn<int> focusDuration = GeneratedColumn<int>(
+      'focus_duration', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(25));
+  static const VerificationMeta _shortBreakDurationMeta =
+      const VerificationMeta('shortBreakDuration');
+  @override
+  late final GeneratedColumn<int> shortBreakDuration = GeneratedColumn<int>(
+      'short_break_duration', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(5));
+  static const VerificationMeta _longBreakDurationMeta =
+      const VerificationMeta('longBreakDuration');
+  @override
+  late final GeneratedColumn<int> longBreakDuration = GeneratedColumn<int>(
+      'long_break_duration', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(15));
+  static const VerificationMeta _longBreakIntervalMeta =
+      const VerificationMeta('longBreakInterval');
+  @override
+  late final GeneratedColumn<int> longBreakInterval = GeneratedColumn<int>(
+      'long_break_interval', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(4));
+  static const VerificationMeta _autoStartBreaksMeta =
+      const VerificationMeta('autoStartBreaks');
+  @override
+  late final GeneratedColumn<bool> autoStartBreaks = GeneratedColumn<bool>(
+      'auto_start_breaks', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("auto_start_breaks" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _autoStartPomodorosMeta =
+      const VerificationMeta('autoStartPomodoros');
+  @override
+  late final GeneratedColumn<bool> autoStartPomodoros = GeneratedColumn<bool>(
+      'auto_start_pomodoros', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("auto_start_pomodoros" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        focusDuration,
+        shortBreakDuration,
+        longBreakDuration,
+        longBreakInterval,
+        autoStartBreaks,
+        autoStartPomodoros
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'focus_settings';
+  @override
+  VerificationContext validateIntegrity(Insertable<FocusSettingsData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('focus_duration')) {
+      context.handle(
+          _focusDurationMeta,
+          focusDuration.isAcceptableOrUnknown(
+              data['focus_duration']!, _focusDurationMeta));
+    }
+    if (data.containsKey('short_break_duration')) {
+      context.handle(
+          _shortBreakDurationMeta,
+          shortBreakDuration.isAcceptableOrUnknown(
+              data['short_break_duration']!, _shortBreakDurationMeta));
+    }
+    if (data.containsKey('long_break_duration')) {
+      context.handle(
+          _longBreakDurationMeta,
+          longBreakDuration.isAcceptableOrUnknown(
+              data['long_break_duration']!, _longBreakDurationMeta));
+    }
+    if (data.containsKey('long_break_interval')) {
+      context.handle(
+          _longBreakIntervalMeta,
+          longBreakInterval.isAcceptableOrUnknown(
+              data['long_break_interval']!, _longBreakIntervalMeta));
+    }
+    if (data.containsKey('auto_start_breaks')) {
+      context.handle(
+          _autoStartBreaksMeta,
+          autoStartBreaks.isAcceptableOrUnknown(
+              data['auto_start_breaks']!, _autoStartBreaksMeta));
+    }
+    if (data.containsKey('auto_start_pomodoros')) {
+      context.handle(
+          _autoStartPomodorosMeta,
+          autoStartPomodoros.isAcceptableOrUnknown(
+              data['auto_start_pomodoros']!, _autoStartPomodorosMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  FocusSettingsData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FocusSettingsData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      focusDuration: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}focus_duration'])!,
+      shortBreakDuration: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}short_break_duration'])!,
+      longBreakDuration: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}long_break_duration'])!,
+      longBreakInterval: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}long_break_interval'])!,
+      autoStartBreaks: attachedDatabase.typeMapping.read(
+          DriftSqlType.bool, data['${effectivePrefix}auto_start_breaks'])!,
+      autoStartPomodoros: attachedDatabase.typeMapping.read(
+          DriftSqlType.bool, data['${effectivePrefix}auto_start_pomodoros'])!,
+    );
+  }
+
+  @override
+  $FocusSettingsTable createAlias(String alias) {
+    return $FocusSettingsTable(attachedDatabase, alias);
+  }
+}
+
+class FocusSettingsData extends DataClass
+    implements Insertable<FocusSettingsData> {
+  /// Single row ID (we only need one row of settings)
+  final int id;
+
+  /// Focus duration in minutes (default: 25)
+  final int focusDuration;
+
+  /// Short break duration in minutes (default: 5)
+  final int shortBreakDuration;
+
+  /// Long break duration in minutes (default: 15)
+  final int longBreakDuration;
+
+  /// Number of pomodoros before a long break (default: 4)
+  final int longBreakInterval;
+
+  /// Auto-start breaks? (default: false)
+  final bool autoStartBreaks;
+
+  /// Auto-start pomodoros? (default: false)
+  final bool autoStartPomodoros;
+  const FocusSettingsData(
+      {required this.id,
+      required this.focusDuration,
+      required this.shortBreakDuration,
+      required this.longBreakDuration,
+      required this.longBreakInterval,
+      required this.autoStartBreaks,
+      required this.autoStartPomodoros});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['focus_duration'] = Variable<int>(focusDuration);
+    map['short_break_duration'] = Variable<int>(shortBreakDuration);
+    map['long_break_duration'] = Variable<int>(longBreakDuration);
+    map['long_break_interval'] = Variable<int>(longBreakInterval);
+    map['auto_start_breaks'] = Variable<bool>(autoStartBreaks);
+    map['auto_start_pomodoros'] = Variable<bool>(autoStartPomodoros);
+    return map;
+  }
+
+  FocusSettingsCompanion toCompanion(bool nullToAbsent) {
+    return FocusSettingsCompanion(
+      id: Value(id),
+      focusDuration: Value(focusDuration),
+      shortBreakDuration: Value(shortBreakDuration),
+      longBreakDuration: Value(longBreakDuration),
+      longBreakInterval: Value(longBreakInterval),
+      autoStartBreaks: Value(autoStartBreaks),
+      autoStartPomodoros: Value(autoStartPomodoros),
+    );
+  }
+
+  factory FocusSettingsData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FocusSettingsData(
+      id: serializer.fromJson<int>(json['id']),
+      focusDuration: serializer.fromJson<int>(json['focusDuration']),
+      shortBreakDuration: serializer.fromJson<int>(json['shortBreakDuration']),
+      longBreakDuration: serializer.fromJson<int>(json['longBreakDuration']),
+      longBreakInterval: serializer.fromJson<int>(json['longBreakInterval']),
+      autoStartBreaks: serializer.fromJson<bool>(json['autoStartBreaks']),
+      autoStartPomodoros: serializer.fromJson<bool>(json['autoStartPomodoros']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'focusDuration': serializer.toJson<int>(focusDuration),
+      'shortBreakDuration': serializer.toJson<int>(shortBreakDuration),
+      'longBreakDuration': serializer.toJson<int>(longBreakDuration),
+      'longBreakInterval': serializer.toJson<int>(longBreakInterval),
+      'autoStartBreaks': serializer.toJson<bool>(autoStartBreaks),
+      'autoStartPomodoros': serializer.toJson<bool>(autoStartPomodoros),
+    };
+  }
+
+  FocusSettingsData copyWith(
+          {int? id,
+          int? focusDuration,
+          int? shortBreakDuration,
+          int? longBreakDuration,
+          int? longBreakInterval,
+          bool? autoStartBreaks,
+          bool? autoStartPomodoros}) =>
+      FocusSettingsData(
+        id: id ?? this.id,
+        focusDuration: focusDuration ?? this.focusDuration,
+        shortBreakDuration: shortBreakDuration ?? this.shortBreakDuration,
+        longBreakDuration: longBreakDuration ?? this.longBreakDuration,
+        longBreakInterval: longBreakInterval ?? this.longBreakInterval,
+        autoStartBreaks: autoStartBreaks ?? this.autoStartBreaks,
+        autoStartPomodoros: autoStartPomodoros ?? this.autoStartPomodoros,
+      );
+  FocusSettingsData copyWithCompanion(FocusSettingsCompanion data) {
+    return FocusSettingsData(
+      id: data.id.present ? data.id.value : this.id,
+      focusDuration: data.focusDuration.present
+          ? data.focusDuration.value
+          : this.focusDuration,
+      shortBreakDuration: data.shortBreakDuration.present
+          ? data.shortBreakDuration.value
+          : this.shortBreakDuration,
+      longBreakDuration: data.longBreakDuration.present
+          ? data.longBreakDuration.value
+          : this.longBreakDuration,
+      longBreakInterval: data.longBreakInterval.present
+          ? data.longBreakInterval.value
+          : this.longBreakInterval,
+      autoStartBreaks: data.autoStartBreaks.present
+          ? data.autoStartBreaks.value
+          : this.autoStartBreaks,
+      autoStartPomodoros: data.autoStartPomodoros.present
+          ? data.autoStartPomodoros.value
+          : this.autoStartPomodoros,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FocusSettingsData(')
+          ..write('id: $id, ')
+          ..write('focusDuration: $focusDuration, ')
+          ..write('shortBreakDuration: $shortBreakDuration, ')
+          ..write('longBreakDuration: $longBreakDuration, ')
+          ..write('longBreakInterval: $longBreakInterval, ')
+          ..write('autoStartBreaks: $autoStartBreaks, ')
+          ..write('autoStartPomodoros: $autoStartPomodoros')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id,
+      focusDuration,
+      shortBreakDuration,
+      longBreakDuration,
+      longBreakInterval,
+      autoStartBreaks,
+      autoStartPomodoros);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FocusSettingsData &&
+          other.id == this.id &&
+          other.focusDuration == this.focusDuration &&
+          other.shortBreakDuration == this.shortBreakDuration &&
+          other.longBreakDuration == this.longBreakDuration &&
+          other.longBreakInterval == this.longBreakInterval &&
+          other.autoStartBreaks == this.autoStartBreaks &&
+          other.autoStartPomodoros == this.autoStartPomodoros);
+}
+
+class FocusSettingsCompanion extends UpdateCompanion<FocusSettingsData> {
+  final Value<int> id;
+  final Value<int> focusDuration;
+  final Value<int> shortBreakDuration;
+  final Value<int> longBreakDuration;
+  final Value<int> longBreakInterval;
+  final Value<bool> autoStartBreaks;
+  final Value<bool> autoStartPomodoros;
+  const FocusSettingsCompanion({
+    this.id = const Value.absent(),
+    this.focusDuration = const Value.absent(),
+    this.shortBreakDuration = const Value.absent(),
+    this.longBreakDuration = const Value.absent(),
+    this.longBreakInterval = const Value.absent(),
+    this.autoStartBreaks = const Value.absent(),
+    this.autoStartPomodoros = const Value.absent(),
+  });
+  FocusSettingsCompanion.insert({
+    this.id = const Value.absent(),
+    this.focusDuration = const Value.absent(),
+    this.shortBreakDuration = const Value.absent(),
+    this.longBreakDuration = const Value.absent(),
+    this.longBreakInterval = const Value.absent(),
+    this.autoStartBreaks = const Value.absent(),
+    this.autoStartPomodoros = const Value.absent(),
+  });
+  static Insertable<FocusSettingsData> custom({
+    Expression<int>? id,
+    Expression<int>? focusDuration,
+    Expression<int>? shortBreakDuration,
+    Expression<int>? longBreakDuration,
+    Expression<int>? longBreakInterval,
+    Expression<bool>? autoStartBreaks,
+    Expression<bool>? autoStartPomodoros,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (focusDuration != null) 'focus_duration': focusDuration,
+      if (shortBreakDuration != null)
+        'short_break_duration': shortBreakDuration,
+      if (longBreakDuration != null) 'long_break_duration': longBreakDuration,
+      if (longBreakInterval != null) 'long_break_interval': longBreakInterval,
+      if (autoStartBreaks != null) 'auto_start_breaks': autoStartBreaks,
+      if (autoStartPomodoros != null)
+        'auto_start_pomodoros': autoStartPomodoros,
+    });
+  }
+
+  FocusSettingsCompanion copyWith(
+      {Value<int>? id,
+      Value<int>? focusDuration,
+      Value<int>? shortBreakDuration,
+      Value<int>? longBreakDuration,
+      Value<int>? longBreakInterval,
+      Value<bool>? autoStartBreaks,
+      Value<bool>? autoStartPomodoros}) {
+    return FocusSettingsCompanion(
+      id: id ?? this.id,
+      focusDuration: focusDuration ?? this.focusDuration,
+      shortBreakDuration: shortBreakDuration ?? this.shortBreakDuration,
+      longBreakDuration: longBreakDuration ?? this.longBreakDuration,
+      longBreakInterval: longBreakInterval ?? this.longBreakInterval,
+      autoStartBreaks: autoStartBreaks ?? this.autoStartBreaks,
+      autoStartPomodoros: autoStartPomodoros ?? this.autoStartPomodoros,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (focusDuration.present) {
+      map['focus_duration'] = Variable<int>(focusDuration.value);
+    }
+    if (shortBreakDuration.present) {
+      map['short_break_duration'] = Variable<int>(shortBreakDuration.value);
+    }
+    if (longBreakDuration.present) {
+      map['long_break_duration'] = Variable<int>(longBreakDuration.value);
+    }
+    if (longBreakInterval.present) {
+      map['long_break_interval'] = Variable<int>(longBreakInterval.value);
+    }
+    if (autoStartBreaks.present) {
+      map['auto_start_breaks'] = Variable<bool>(autoStartBreaks.value);
+    }
+    if (autoStartPomodoros.present) {
+      map['auto_start_pomodoros'] = Variable<bool>(autoStartPomodoros.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FocusSettingsCompanion(')
+          ..write('id: $id, ')
+          ..write('focusDuration: $focusDuration, ')
+          ..write('shortBreakDuration: $shortBreakDuration, ')
+          ..write('longBreakDuration: $longBreakDuration, ')
+          ..write('longBreakInterval: $longBreakInterval, ')
+          ..write('autoStartBreaks: $autoStartBreaks, ')
+          ..write('autoStartPomodoros: $autoStartPomodoros')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2549,12 +2975,19 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $JournalEntriesTable journalEntries = $JournalEntriesTable(this);
   late final $AchievementsTable achievements = $AchievementsTable(this);
   late final $UserProgressTable userProgress = $UserProgressTable(this);
+  late final $FocusSettingsTable focusSettings = $FocusSettingsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [habits, habitCompletions, journalEntries, achievements, userProgress];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+        habits,
+        habitCompletions,
+        journalEntries,
+        achievements,
+        userProgress,
+        focusSettings
+      ];
 }
 
 typedef $$HabitsTableCreateCompanionBuilder = HabitsCompanion Function({
@@ -3959,6 +4392,214 @@ typedef $$UserProgressTableProcessedTableManager = ProcessedTableManager<
     ),
     UserProgressEntity,
     PrefetchHooks Function()>;
+typedef $$FocusSettingsTableCreateCompanionBuilder = FocusSettingsCompanion
+    Function({
+  Value<int> id,
+  Value<int> focusDuration,
+  Value<int> shortBreakDuration,
+  Value<int> longBreakDuration,
+  Value<int> longBreakInterval,
+  Value<bool> autoStartBreaks,
+  Value<bool> autoStartPomodoros,
+});
+typedef $$FocusSettingsTableUpdateCompanionBuilder = FocusSettingsCompanion
+    Function({
+  Value<int> id,
+  Value<int> focusDuration,
+  Value<int> shortBreakDuration,
+  Value<int> longBreakDuration,
+  Value<int> longBreakInterval,
+  Value<bool> autoStartBreaks,
+  Value<bool> autoStartPomodoros,
+});
+
+class $$FocusSettingsTableFilterComposer
+    extends Composer<_$AppDatabase, $FocusSettingsTable> {
+  $$FocusSettingsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get focusDuration => $composableBuilder(
+      column: $table.focusDuration, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get shortBreakDuration => $composableBuilder(
+      column: $table.shortBreakDuration,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get longBreakDuration => $composableBuilder(
+      column: $table.longBreakDuration,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get longBreakInterval => $composableBuilder(
+      column: $table.longBreakInterval,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get autoStartBreaks => $composableBuilder(
+      column: $table.autoStartBreaks,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get autoStartPomodoros => $composableBuilder(
+      column: $table.autoStartPomodoros,
+      builder: (column) => ColumnFilters(column));
+}
+
+class $$FocusSettingsTableOrderingComposer
+    extends Composer<_$AppDatabase, $FocusSettingsTable> {
+  $$FocusSettingsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get focusDuration => $composableBuilder(
+      column: $table.focusDuration,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get shortBreakDuration => $composableBuilder(
+      column: $table.shortBreakDuration,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get longBreakDuration => $composableBuilder(
+      column: $table.longBreakDuration,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get longBreakInterval => $composableBuilder(
+      column: $table.longBreakInterval,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get autoStartBreaks => $composableBuilder(
+      column: $table.autoStartBreaks,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get autoStartPomodoros => $composableBuilder(
+      column: $table.autoStartPomodoros,
+      builder: (column) => ColumnOrderings(column));
+}
+
+class $$FocusSettingsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $FocusSettingsTable> {
+  $$FocusSettingsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get focusDuration => $composableBuilder(
+      column: $table.focusDuration, builder: (column) => column);
+
+  GeneratedColumn<int> get shortBreakDuration => $composableBuilder(
+      column: $table.shortBreakDuration, builder: (column) => column);
+
+  GeneratedColumn<int> get longBreakDuration => $composableBuilder(
+      column: $table.longBreakDuration, builder: (column) => column);
+
+  GeneratedColumn<int> get longBreakInterval => $composableBuilder(
+      column: $table.longBreakInterval, builder: (column) => column);
+
+  GeneratedColumn<bool> get autoStartBreaks => $composableBuilder(
+      column: $table.autoStartBreaks, builder: (column) => column);
+
+  GeneratedColumn<bool> get autoStartPomodoros => $composableBuilder(
+      column: $table.autoStartPomodoros, builder: (column) => column);
+}
+
+class $$FocusSettingsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $FocusSettingsTable,
+    FocusSettingsData,
+    $$FocusSettingsTableFilterComposer,
+    $$FocusSettingsTableOrderingComposer,
+    $$FocusSettingsTableAnnotationComposer,
+    $$FocusSettingsTableCreateCompanionBuilder,
+    $$FocusSettingsTableUpdateCompanionBuilder,
+    (
+      FocusSettingsData,
+      BaseReferences<_$AppDatabase, $FocusSettingsTable, FocusSettingsData>
+    ),
+    FocusSettingsData,
+    PrefetchHooks Function()> {
+  $$FocusSettingsTableTableManager(_$AppDatabase db, $FocusSettingsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FocusSettingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FocusSettingsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FocusSettingsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<int> focusDuration = const Value.absent(),
+            Value<int> shortBreakDuration = const Value.absent(),
+            Value<int> longBreakDuration = const Value.absent(),
+            Value<int> longBreakInterval = const Value.absent(),
+            Value<bool> autoStartBreaks = const Value.absent(),
+            Value<bool> autoStartPomodoros = const Value.absent(),
+          }) =>
+              FocusSettingsCompanion(
+            id: id,
+            focusDuration: focusDuration,
+            shortBreakDuration: shortBreakDuration,
+            longBreakDuration: longBreakDuration,
+            longBreakInterval: longBreakInterval,
+            autoStartBreaks: autoStartBreaks,
+            autoStartPomodoros: autoStartPomodoros,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<int> focusDuration = const Value.absent(),
+            Value<int> shortBreakDuration = const Value.absent(),
+            Value<int> longBreakDuration = const Value.absent(),
+            Value<int> longBreakInterval = const Value.absent(),
+            Value<bool> autoStartBreaks = const Value.absent(),
+            Value<bool> autoStartPomodoros = const Value.absent(),
+          }) =>
+              FocusSettingsCompanion.insert(
+            id: id,
+            focusDuration: focusDuration,
+            shortBreakDuration: shortBreakDuration,
+            longBreakDuration: longBreakDuration,
+            longBreakInterval: longBreakInterval,
+            autoStartBreaks: autoStartBreaks,
+            autoStartPomodoros: autoStartPomodoros,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$FocusSettingsTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $FocusSettingsTable,
+    FocusSettingsData,
+    $$FocusSettingsTableFilterComposer,
+    $$FocusSettingsTableOrderingComposer,
+    $$FocusSettingsTableAnnotationComposer,
+    $$FocusSettingsTableCreateCompanionBuilder,
+    $$FocusSettingsTableUpdateCompanionBuilder,
+    (
+      FocusSettingsData,
+      BaseReferences<_$AppDatabase, $FocusSettingsTable, FocusSettingsData>
+    ),
+    FocusSettingsData,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -3973,4 +4614,6 @@ class $AppDatabaseManager {
       $$AchievementsTableTableManager(_db, _db.achievements);
   $$UserProgressTableTableManager get userProgress =>
       $$UserProgressTableTableManager(_db, _db.userProgress);
+  $$FocusSettingsTableTableManager get focusSettings =>
+      $$FocusSettingsTableTableManager(_db, _db.focusSettings);
 }

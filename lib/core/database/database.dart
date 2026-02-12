@@ -5,41 +5,61 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 
-import 'tables/habits_table.dart';
-import 'tables/journal_entries_table.dart';
-import 'tables/achievements_table.dart';
-import 'tables/user_progress_table.dart';
+import 'package:habit_tracker/core/database/tables/habits_table.dart';
+import 'package:habit_tracker/core/database/tables/journal_entries_table.dart';
+import 'package:habit_tracker/core/database/tables/achievements_table.dart';
+import 'package:habit_tracker/core/database/tables/user_progress_table.dart';
+import 'package:habit_tracker/core/database/tables/focus_settings_table.dart';
 
 part 'database.g.dart';
 
-/// Main application database using Drift (SQLite)
 @DriftDatabase(tables: [
   Habits,
   HabitCompletions,
   JournalEntries,
   Achievements,
-  UserProgress
+  UserProgress,
+  FocusSettings, // Add table
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4; // Increment version
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (Migrator m) => m.createAll(),
         onUpgrade: (Migrator m, int from, int to) async {
           if (from < 2) {
-            // Add priority column with default value (3 - Medium)
             await m.addColumn(habits, habits.priority);
           }
           if (from < 3) {
-            // Add UserProgress table
             await m.createTable(userProgress);
+          }
+          if (from < 4) {
+            // Add FocusSettings table
+            await m.createTable(focusSettings);
+            // Insert default settings
+            await into(focusSettings).insert(
+              const FocusSettingsCompanion(), // Uses defaults
+            );
           }
         },
       );
+
+  // ============ FOCUS SETTINGS QUERIES ============
+
+  /// Get focus settings (first row)
+  Future<FocusSettingsData?> getFocusSettings() {
+    return select(focusSettings).getSingleOrNull();
+  }
+
+  /// Update focus settings
+  Future<int> updateFocusSettings(FocusSettingsCompanion settings) {
+    // We update the row with ID 1, or insert if not exists
+    return into(focusSettings).insertOnConflictUpdate(settings);
+  }
 
   // ============ HABIT QUERIES ============
 

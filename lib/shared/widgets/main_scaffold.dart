@@ -44,9 +44,9 @@ class _BottomNavBar extends StatelessWidget {
     final location = GoRouterState.of(context).uri.toString();
     if (location.startsWith('/home')) return 0;
     if (location.startsWith('/habits')) return 1;
-    if (location.startsWith('/journal')) return 2;
-    if (location.startsWith('/analytics')) return 3;
-    if (location.startsWith('/settings')) return 4;
+    if (location.startsWith('/focus')) return 2;
+    if (location.startsWith('/journal')) return 3;
+    if (location.startsWith('/analytics')) return 4;
     return 0;
   }
 
@@ -59,13 +59,13 @@ class _BottomNavBar extends StatelessWidget {
         context.go('/habits');
         break;
       case 2:
-        context.go('/journal');
+        context.go('/focus');
         break;
       case 3:
-        context.go('/analytics');
+        context.go('/journal');
         break;
       case 4:
-        context.go('/settings');
+        context.go('/analytics');
         break;
     }
   }
@@ -106,20 +106,20 @@ class _BottomNavBar extends StatelessWidget {
                 onTap: () => _onItemTapped(context, 1),
               ),
               _NavItem(
-                icon: Icons.book_rounded,
-                label: 'Journal',
+                icon: Icons.timer_rounded,
+                label: 'Focus',
                 isSelected: currentIndex == 2,
                 onTap: () => _onItemTapped(context, 2),
               ),
               _NavItem(
-                icon: Icons.bar_chart_rounded,
-                label: 'Stats',
+                icon: Icons.book_rounded,
+                label: 'Journal',
                 isSelected: currentIndex == 3,
                 onTap: () => _onItemTapped(context, 3),
               ),
               _NavItem(
-                icon: Icons.settings_rounded,
-                label: 'Settings',
+                icon: Icons.bar_chart_rounded,
+                label: 'Stats',
                 isSelected: currentIndex == 4,
                 onTap: () => _onItemTapped(context, 4),
               ),

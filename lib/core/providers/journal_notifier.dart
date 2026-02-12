@@ -57,7 +57,7 @@ class JournalNotifier extends Notifier<void> {
         mood: mood.index,
         tags: drift.Value(tags?.join(',')),
         voiceNotePath: drift.Value(voiceNotePath),
-        hasVoiceNote: drift.Value(voiceNotePath != null),
+        hasVoiceNote: voiceNotePath != null,
         wordCount: wordCount,
         updatedAt: DateTime.now(),
       );

@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_theme.dart';
-import '../../services/voice_recorder_service.dart';
+import 'package:habit_tracker/app/theme/app_colors.dart';
+import 'package:habit_tracker/app/theme/app_theme.dart';
+import 'package:habit_tracker/features/journal/services/voice_recorder_service.dart';
 
 class VoiceRecorderSheet extends StatefulWidget {
   final Function(String path) onRecordingComplete;
@@ -105,7 +105,7 @@ class _VoiceRecorderSheetState extends State<VoiceRecorderSheet> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: theme.colorScheme.onSurface.withOpacity(0.2),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -117,7 +117,7 @@ class _VoiceRecorderSheetState extends State<VoiceRecorderSheet> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: AppTheme.spacingMs),
+          const SizedBox(height: AppTheme.spacingMd),
 
           Text(
             _formatDuration(_duration),
@@ -145,7 +145,7 @@ class _VoiceRecorderSheetState extends State<VoiceRecorderSheet> {
                     color: (_isRecording
                             ? theme.colorScheme.error
                             : AppColors.primary)
-                        .withOpacity(0.3),
+                        .withValues(alpha: 0.3),
                     spreadRadius: _isRecording ? 10 : 0,
                     blurRadius: 20,
                   ),

@@ -6,7 +6,7 @@ import '../../../../app/theme/app_theme.dart';
 import '../../../../core/providers/habit_providers.dart';
 import '../../../../core/providers/journal_providers.dart';
 
-/// Streak cards showing habit, journal, and XP streaks
+/// Compact streak cards showing habit, journal, and XP streaks
 class StreakCards extends ConsumerWidget {
   const StreakCards({super.key});
 
@@ -19,7 +19,6 @@ class StreakCards extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppTheme.spacingLg,
-        vertical: AppTheme.spacingMd,
       ),
       child: Row(
         children: [
@@ -31,14 +30,14 @@ class StreakCards extends ConsumerWidget {
                 loading: () => '-',
                 error: (_, __) => '0',
               ),
-              label: 'Day Streak',
-              color: AppColors.accent,
+              label: 'Streak',
+              gradient: AppColors.accentGradient,
             )
                 .animate()
                 .fadeIn(delay: 100.ms)
                 .scale(begin: const Offset(0.95, 0.95)),
           ),
-          const SizedBox(width: AppTheme.spacingMd),
+          const SizedBox(width: AppTheme.spacingSm),
           Expanded(
             child: _StreakCard(
               icon: '📝',
@@ -48,19 +47,19 @@ class StreakCards extends ConsumerWidget {
                 error: (_, __) => '0',
               ),
               label: 'Journal',
-              color: AppColors.primary,
+              gradient: AppColors.primaryGradient,
             )
                 .animate()
                 .fadeIn(delay: 200.ms)
                 .scale(begin: const Offset(0.95, 0.95)),
           ),
-          const SizedBox(width: AppTheme.spacingMd),
+          const SizedBox(width: AppTheme.spacingSm),
           Expanded(
             child: _StreakCard(
               icon: '📊',
               value: '${todayProgress.round()}%',
               label: 'Today',
-              color: AppColors.success,
+              gradient: AppColors.successGradient,
             )
                 .animate()
                 .fadeIn(delay: 300.ms)
@@ -76,13 +75,13 @@ class _StreakCard extends StatelessWidget {
   final String icon;
   final String value;
   final String label;
-  final Color color;
+  final LinearGradient gradient;
 
   const _StreakCard({
     required this.icon,
     required this.value,
     required this.label,
-    required this.color,
+    required this.gradient,
   });
 
   @override
@@ -91,30 +90,41 @@ class _StreakCard extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return Container(
-      padding: const EdgeInsets.all(AppTheme.spacingMd),
+      padding: const EdgeInsets.symmetric(
+        vertical: AppTheme.spacingSm,
+        horizontal: AppTheme.spacingXs,
+      ),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: isDark ? 0.2 : 0.1),
-        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+        gradient: LinearGradient(
+          begin: gradient.begin,
+          end: gradient.end,
+          colors: gradient.colors
+              .map((c) => c.withValues(alpha: isDark ? 0.25 : 0.12))
+              .toList(),
+        ),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
         border: Border.all(
-          color: color.withValues(alpha: 0.3),
+          color: gradient.colors.first.withValues(alpha: isDark ? 0.4 : 0.2),
           width: 1,
         ),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(icon, style: const TextStyle(fontSize: 24)),
-          const SizedBox(height: AppTheme.spacingXs),
+          Text(icon, style: const TextStyle(fontSize: 16)),
+          const SizedBox(height: 2),
           Text(
             value,
-            style: theme.textTheme.headlineSmall?.copyWith(
+            style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
-              color: color,
+              color: gradient.colors.first,
             ),
           ),
           Text(
             label,
             style: theme.textTheme.labelSmall?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              fontSize: 10,
             ),
           ),
         ],
