@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../services/gamification_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/providers/gamification_providers.dart';
 
-class LevelProgressCard extends StatelessWidget {
+class LevelProgressCard extends ConsumerWidget {
   final int currentXp;
-  final GamificationService _gamificationService = const GamificationService();
 
   const LevelProgressCard({
     super.key,
@@ -11,12 +11,14 @@ class LevelProgressCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final int currentLevel = _gamificationService.calculateLevel(currentXp);
-    final double progress = _gamificationService.progressToNextLevel(currentXp);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final gamificationService = ref.watch(gamificationServiceProvider);
+
+    final int currentLevel = gamificationService.calculateLevel(currentXp);
+    final double progress = gamificationService.progressToNextLevel(currentXp);
     final int xpForCurrent =
-        _gamificationService.xpForCurrentLevel(currentLevel);
-    final int xpForNext = _gamificationService.xpForNextLevel(currentLevel);
+        gamificationService.xpForCurrentLevel(currentLevel);
+    final int xpForNext = gamificationService.xpForNextLevel(currentLevel);
 
     // XP gained within this level
     final int currentLevelXp = currentXp - xpForCurrent;

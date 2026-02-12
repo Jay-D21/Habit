@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../services/notification_service.dart';
-import '../services/gamification_service.dart';
+import '../../core/providers/notification_providers.dart';
 import 'habit_providers.dart';
 import 'gamification_providers.dart';
 import '../../features/habits/data/models/habit.dart';
@@ -137,16 +136,6 @@ class HabitNotifier extends Notifier<void> {
     }
   }
 }
-
-final notificationServiceProvider = Provider<NotificationService>((ref) {
-  return NotificationService();
-});
-
-/// Provider for GamificationService
-final gamificationServiceProvider = Provider<GamificationService>((ref) {
-  final db = ref.watch(databaseProvider);
-  return GamificationService(db);
-});
 
 /// Provider for habit operations
 final habitNotifierProvider = NotifierProvider<HabitNotifier, void>(() {

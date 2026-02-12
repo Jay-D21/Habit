@@ -6,6 +6,10 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../core/providers/journal_notifier.dart';
 import '../data/models/journal_entry.dart';
+import 'widgets/audio_player_widget.dart';
+import 'widgets/voice_recorder_sheet.dart';
+
+import '../../../main.dart'; // Import global database
 
 /// Journal entry creation/editing screen
 class JournalEntryScreen extends ConsumerStatefulWidget {
@@ -21,8 +25,44 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
   Mood _selectedMood = Mood.neutral;
+  String? _voiceNotePath;
+  bool _isLoading = false;
 
   bool get _isEditing => widget.entryId != null;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_isEditing) {
+      _loadEntry();
+    }
+  }
+
+  Future<void> _loadEntry() async {
+    setState(() => _isLoading = true);
+    try {
+      if (widget.entryId != null) {
+        final id = int.tryParse(widget.entryId!);
+        if (id != null) {
+          final entry = await database.getJournalEntryById(id);
+          if (entry != null && mounted) {
+            _titleController.text = entry.title;
+            _contentController.text = entry.content;
+            setState(() {
+              _selectedMood = Mood.values[entry.mood];
+              _voiceNotePath = entry.voiceNotePath;
+            });
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading entry: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -33,6 +73,19 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
 
   void _selectMood(int index) {
     setState(() => _selectedMood = Mood.values[index]);
+  }
+
+  void _showRecordingSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => VoiceRecorderSheet(
+        onRecordingComplete: (path) {
+          setState(() => _voiceNotePath = path);
+        },
+      ),
+    );
   }
 
   Future<void> _saveEntry() async {
@@ -53,11 +106,22 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
       return;
     }
 
-    await ref.read(journalNotifierProvider.notifier).createEntry(
-          title: title,
-          content: content,
-          mood: _selectedMood,
-        );
+    if (_isEditing) {
+      await ref.read(journalNotifierProvider.notifier).updateEntry(
+            id: int.parse(widget.entryId!),
+            title: title,
+            content: content,
+            mood: _selectedMood,
+            voiceNotePath: _voiceNotePath,
+          );
+    } else {
+      await ref.read(journalNotifierProvider.notifier).createEntry(
+            title: title,
+            content: content,
+            mood: _selectedMood,
+            voiceNotePath: _voiceNotePath,
+          );
+    }
 
     HapticFeedback.mediumImpact();
 
@@ -83,6 +147,10 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
       AppColors.moodAngry,
       AppColors.moodCalm,
     ];
+
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -207,16 +275,25 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
             ),
             const SizedBox(height: AppTheme.spacingLg),
 
-            // Voice note button (placeholder - would need audio recorder package)
-            OutlinedButton.icon(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Voice recording coming soon!')),
-                );
-              },
-              icon: const Icon(Icons.mic_rounded),
-              label: const Text('Add Voice Note'),
-            ),
+            // Voice Note Section
+            if (_voiceNotePath != null)
+              AudioPlayerWidget(
+                audioPath: _voiceNotePath!,
+                onDelete: () {
+                  setState(() => _voiceNotePath = null);
+                },
+              )
+            else
+              OutlinedButton.icon(
+                onPressed: _showRecordingSheet,
+                icon: const Icon(Icons.mic_rounded),
+                label: const Text('Add Voice Note'),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 56),
+                ),
+              ),
+
+            const SizedBox(height: AppTheme.spacingXl),
           ],
         ),
       ),

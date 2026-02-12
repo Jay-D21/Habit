@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'widgets/greeting_header.dart';
 import 'widgets/streak_cards.dart';
 import 'widgets/today_habits_section.dart';
-import 'widgets/top_priority_section.dart';
 import 'widgets/motivational_quote_card.dart';
 import 'widgets/weekly_overview.dart';
 import 'widgets/daily_progress_chart.dart';
@@ -20,7 +19,7 @@ class HomeScreen extends ConsumerWidget {
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
-            // Greeting Header
+            // Greeting Header (Has date/greeting + mini stats)
             SliverToBoxAdapter(
               child: const GreetingHeader()
                   .animate()
@@ -28,7 +27,7 @@ class HomeScreen extends ConsumerWidget {
                   .slideY(begin: -0.1, end: 0),
             ),
 
-            // Streak Cards
+            // Streak Cards (Quick stats)
             SliverToBoxAdapter(
               child: const StreakCards()
                   .animate()
@@ -47,15 +46,10 @@ class HomeScreen extends ConsumerWidget {
                   .slideY(begin: 0.1, end: 0),
             ),
 
-            // Top Priority Section
+            // Today's Habits Section (Main Content)
             const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.only(top: 8),
-                child: TopPrioritySection(),
-              ),
+              child: SizedBox(height: 16),
             ),
-
-            // Today's Habits Section
             SliverToBoxAdapter(
               child: const TodayHabitsSection()
                   .animate()

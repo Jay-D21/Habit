@@ -7,6 +7,8 @@ import 'app/app.dart';
 import 'core/database/database.dart';
 import 'core/services/aws_auth_service.dart';
 import 'core/services/notification_service.dart';
+import 'features/achievements/services/gamification_service.dart';
+import 'features/habits/data/repositories/habit_repository.dart';
 
 /// Global Drift database instance
 late AppDatabase database;
@@ -41,6 +43,16 @@ void main() async {
   // Initialize Drift database
   database = AppDatabase();
   debugPrint('✅ Database initialized');
+
+  // Initialize Gamification (Seed Badges)
+  try {
+    final habitRepo = HabitRepository(database);
+    final gamificationService = GamificationService(database, habitRepo);
+    await gamificationService.initialize();
+    debugPrint('✅ Gamification Service initialized');
+  } catch (e) {
+    debugPrint('❌ Gamification Service initialization failed: $e');
+  }
 
   // Initialize Mobile Ads SDK
   try {

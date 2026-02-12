@@ -6,11 +6,11 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_theme.dart';
 import '../../../../core/providers/habit_providers.dart';
 import '../../../../core/providers/habit_notifier.dart';
+import '../../../../core/providers/notification_providers.dart';
 import '../../../habits/data/models/habit.dart';
 import '../../../../core/models/priority_enum.dart';
 import '../../../../shared/widgets/priority_selector_widget.dart';
 import '../../../habits/presentation/widgets/habit_card.dart';
-import '../../../../core/services/notification_service.dart';
 
 /// Today's habits section with habit list
 class TodayHabitsSection extends ConsumerWidget {
@@ -20,6 +20,7 @@ class TodayHabitsSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final habitsAsync = ref.watch(habitsProvider);
+    final completionsAsync = ref.watch(todayCompletionsProvider);
 
     return Padding(
       padding: const EdgeInsets.all(AppTheme.spacingLg),
@@ -32,7 +33,7 @@ class TodayHabitsSection extends ConsumerWidget {
             children: [
               Text(
                 "Today's Habits",
-                style: theme.textTheme.titleLarge?.copyWith(
+                style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -47,52 +48,52 @@ class TodayHabitsSection extends ConsumerWidget {
           // Habits list
           habitsAsync.when(
             data: (habits) {
-              // Sort habits by priority (descending) then sortOrder (ascending)
-              final sortedHabits = List<Habit>.from(habits);
-              sortedHabits.sort((a, b) {
-                final priorityDiff = b.priority.compareTo(a.priority);
-                if (priorityDiff != 0) return priorityDiff;
-                return a.sortOrder.compareTo(b.sortOrder);
-              });
+              return completionsAsync.when(
+                data: (completions) {
+                  // Sort habits:
+                  // 1. Incomplete first
+                  // 2. High priority first
+                  // 3. Custom sort order
+                  final sortedHabits = List<Habit>.from(habits);
+                  sortedHabits.sort((a, b) {
+                    final aComp = completions
+                        .where((c) => c.habitId == a.id)
+                        .fold(0, (sum, c) => sum + c.count);
+                    final bComp = completions
+                        .where((c) => c.habitId == b.id)
+                        .fold(0, (sum, c) => sum + c.count);
 
-              if (sortedHabits.isEmpty) {
-                return _EmptyHabitsState(
-                  onAddHabit: () => _showAddHabitSheet(context, ref),
-                );
-              }
+                    final aIsDone = aComp >= a.targetCount;
+                    final bIsDone = bComp >= b.targetCount;
 
-              return Column(
-                children: [
-                  // Scrollable habits list with max height
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxHeight: 400, // Max height before scrolling
-                    ),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: sortedHabits
-                            .map((habit) => Padding(
-                                  padding: const EdgeInsets.only(
-                                      bottom: AppTheme.spacingSm),
-                                  child: HabitCard(habit: habit),
-                                ))
-                            .toList(),
-                      ),
-                    ),
-                  ),
+                    if (aIsDone != bIsDone) {
+                      return aIsDone ? 1 : -1; // Incomplete first
+                    }
 
-                  const SizedBox(height: AppTheme.spacingLg),
+                    final priorityDiff = b.priority.compareTo(a.priority);
+                    if (priorityDiff != 0) return priorityDiff;
+                    return a.sortOrder.compareTo(b.sortOrder);
+                  });
 
-                  // Add habit button
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () => _showAddHabitSheet(context, ref),
-                      icon: const Icon(Icons.add_rounded),
-                      label: const Text('Add New Habit'),
-                    ),
-                  ),
-                ],
+                  // If no habits exist
+                  if (sortedHabits.isEmpty) {
+                    return _EmptyHabitsState(
+                      onAddHabit: () => _showAddHabitSheet(context, ref),
+                    );
+                  }
+
+                  return Column(
+                    children: sortedHabits
+                        .map((habit) => Padding(
+                              padding: const EdgeInsets.only(
+                                  bottom: AppTheme.spacingSm),
+                              child: HabitCard(habit: habit),
+                            ))
+                        .toList(),
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Text('Error loading completions: $e'),
               );
             },
             loading: () => const Center(

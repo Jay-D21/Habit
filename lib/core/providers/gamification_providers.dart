@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'habit_providers.dart';
 import '../../core/database/database.dart';
+import '../../features/achievements/services/gamification_service.dart';
 
 /// Provider for user progress (XP, Level)
 final userProgressProvider = StreamProvider<UserProgressEntity?>((ref) async* {
@@ -14,4 +15,17 @@ final userProgressProvider = StreamProvider<UserProgressEntity?>((ref) async* {
   await for (final progress in stream) {
     yield progress;
   }
+});
+
+/// Provider for all achievements
+final achievementsProvider = StreamProvider<List<AchievementEntity>>((ref) {
+  final db = ref.watch(databaseProvider);
+  return db.select(db.achievements).watch();
+});
+
+/// Provider for GamificationService
+final gamificationServiceProvider = Provider<GamificationService>((ref) {
+  final db = ref.watch(databaseProvider);
+  final habitRepo = ref.watch(habitRepositoryProvider);
+  return GamificationService(db, habitRepo);
 });

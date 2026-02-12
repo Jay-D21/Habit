@@ -1,10 +1,23 @@
 import 'dart:math';
+import 'package:drift/drift.dart';
+import '../../../core/database/database.dart';
+import '../../habits/data/models/habit.dart';
 import '../../../core/models/priority_enum.dart';
 
 /// Service responsible for handling Gamification logic,
 /// including XP calculations, leveling systems, and progress tracking.
+import '../../habits/data/repositories/habit_repository.dart';
+import '../data/badge_seeder.dart';
+
 class GamificationService {
-  const GamificationService();
+  final AppDatabase _db;
+  final HabitRepository _habitRepository;
+
+  const GamificationService(this._db, this._habitRepository);
+
+  Future<void> initialize() async {
+    await BadgeSeeder.seed(_db);
+  }
 
   // Base XP gained for completing a single habit instance
   static const int _baseXp = 10;
@@ -78,5 +91,50 @@ class GamificationService {
 
     double progress = xpInCurrentLevel / xpRequiredForNextLevel;
     return progress.clamp(0.0, 1.0);
+  }
+
+  /// Adds XP for a completed habit.
+  ///
+  /// [habit] - The habit that was completed.
+  /// [isStreakMaintain] - Whether the user maintained a streak.
+  Future<void> addXPForHabit(HabitModel habit,
+      {bool isStreakMaintain = false}) async {
+    // 1. Calculate XP
+    final currentStreak = await _habitRepository.calculateStreak(habit.id!);
+    final earnedXp = calculateXpEarned(
+      priority: HabitPriority.values.firstWhere(
+        (e) => e.value == habit.priority,
+        orElse: () => HabitPriority.medium,
+      ),
+      currentStreak: currentStreak,
+    );
+
+    // 2. Get User Progress
+    final userProgress = await (_db.select(_db.userProgress).getSingleOrNull());
+
+    if (userProgress == null) {
+      // Create initial progress if not exists
+      await _db.into(_db.userProgress).insert(
+            UserProgressCompanion.insert(
+              xp: Value(earnedXp),
+              level: Value(calculateLevel(earnedXp)),
+              joinDate: DateTime.now(),
+              lastUpdated: DateTime.now(),
+            ),
+          );
+    } else {
+      // Update existing progress
+      final newTotalXp = userProgress.xp + earnedXp;
+      final newLevel = calculateLevel(newTotalXp);
+
+      await (_db.update(_db.userProgress)
+            ..where((u) => u.id.equals(userProgress.id)))
+          .write(
+        UserProgressCompanion(
+            xp: Value(newTotalXp),
+            level: Value(newLevel),
+            lastUpdated: Value(DateTime.now())),
+      );
+    }
   }
 }

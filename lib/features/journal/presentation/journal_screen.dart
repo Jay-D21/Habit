@@ -506,6 +506,26 @@ class _TilesView extends ConsumerWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
+                  if (entry.hasVoiceNote) ...[
+                    const SizedBox(height: AppTheme.spacingXs),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.mic_rounded,
+                          size: 12,
+                          color: theme.colorScheme.onSurface.withOpacity(0.5),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Voice Note',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            fontSize: 10,
+                            color: theme.colorScheme.onSurface.withOpacity(0.5),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: AppTheme.spacingXs),
                   Expanded(
                     child: Text(
@@ -589,6 +609,50 @@ class _ListView extends ConsumerWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
+                        if (entry.hasVoiceNote) ...[
+                          const SizedBox(height: AppTheme.spacingXs),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.mic_rounded,
+                                size: 14,
+                                color: theme.colorScheme.onSurface
+                                    .withOpacity(0.5),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Voice Note',
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  fontSize: 11,
+                                  color: theme.colorScheme.onSurface
+                                      .withOpacity(0.5),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                        if (entry.hasVoiceNote) ...[
+                          const SizedBox(height: AppTheme.spacingXs),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.mic_rounded,
+                                size: 14,
+                                color: theme.colorScheme.onSurface
+                                    .withOpacity(0.5),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Voice Note',
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  fontSize: 11,
+                                  color: theme.colorScheme.onSurface
+                                      .withOpacity(0.5),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                         const SizedBox(height: AppTheme.spacingXs),
                         Text(
                           entry.content,

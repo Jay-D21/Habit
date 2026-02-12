@@ -44,6 +44,7 @@ class JournalNotifier extends Notifier<void> {
     required String content,
     required Mood mood,
     List<String>? tags,
+    String? voiceNotePath,
   }) async {
     final existing = await database.getJournalEntryById(id);
     if (existing != null) {
@@ -55,6 +56,8 @@ class JournalNotifier extends Notifier<void> {
         content: content,
         mood: mood.index,
         tags: drift.Value(tags?.join(',')),
+        voiceNotePath: drift.Value(voiceNotePath),
+        hasVoiceNote: drift.Value(voiceNotePath != null),
         wordCount: wordCount,
         updatedAt: DateTime.now(),
       );

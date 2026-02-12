@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 **Project Name:** Loop - Premium Habit Tracker
 **Version:** 2.0
-**Status:** DRAFT
+**Status:** ACTIVE
 **Last Updated:** 2026-02-10
 
 ---

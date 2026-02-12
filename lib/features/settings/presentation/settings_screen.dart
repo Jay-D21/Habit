@@ -152,6 +152,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               _SettingsSection(
                 title: 'Preferences',
                 children: [
+                  _SettingsTile(
+                    icon: Icons.emoji_events_rounded,
+                    title: 'Badges & Achievements',
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () => context.push('/badges'),
+                  ),
                   _SettingsSwitch(
                     icon: Icons.volume_up_rounded,
                     title: 'Sound Effects',

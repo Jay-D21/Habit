@@ -1,71 +1,15 @@
 import 'package:flutter/material.dart';
-import '../../data/models/achievement.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/providers/gamification_providers.dart';
+import '../../data/models/achievement.dart'; // Keep for AchievementType if needed
 import '../widgets/badge_item.dart';
 
-class BadgesScreen extends StatelessWidget {
+class BadgesScreen extends ConsumerWidget {
   const BadgesScreen({super.key});
 
-  // Mock data for UI demonstration
-  List<AchievementModel> get _mockAchievements => [
-        AchievementModel(
-          key: 'early_bird',
-          name: 'Early Bird',
-          description: 'Complete a habit before 7 AM',
-          icon: '🌅',
-          type: AchievementType.milestone,
-          targetValue: 1,
-          isUnlocked: true,
-          unlockedAt: DateTime.now(),
-        ),
-        AchievementModel(
-          key: 'week_streak',
-          name: '7-Day Streak',
-          description: 'Maintain a streak for 7 days',
-          icon: '🔥',
-          type: AchievementType.streak,
-          targetValue: 7,
-          currentValue: 5,
-        ),
-        AchievementModel(
-          key: 'first_step',
-          name: 'First Step',
-          description: 'Complete your first habit',
-          icon: '👣',
-          type: AchievementType.habitCount,
-          targetValue: 1,
-          isUnlocked: true,
-          unlockedAt: DateTime.now().subtract(const Duration(days: 2)),
-        ),
-        AchievementModel(
-          key: 'master',
-          name: 'Habit Master',
-          description: 'Reach Level 10',
-          icon: '👑',
-          type: AchievementType.milestone,
-          targetValue: 10,
-        ),
-        AchievementModel(
-          key: 'night_owl',
-          name: 'Night Owl',
-          description: 'Complete a habit after 10 PM',
-          icon: '🦉',
-          type: AchievementType.milestone,
-          targetValue: 1,
-        ),
-        AchievementModel(
-          key: 'century',
-          name: 'Century Club',
-          description: 'Complete 100 habits total',
-          icon: '💯',
-          type: AchievementType.totalCompletions,
-          targetValue: 100,
-          currentValue: 42,
-        ),
-      ];
-
   @override
-  Widget build(BuildContext context) {
-    final achievements = _mockAchievements;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final achievementsAsync = ref.watch(achievementsProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -78,18 +22,42 @@ class BadgesScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.black,
       ),
-      body: GridView.builder(
-        padding: const EdgeInsets.all(16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3, // 3 columns
-          childAspectRatio: 0.7, // Taller items
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-        ),
-        itemCount: achievements.length,
-        itemBuilder: (context, index) {
-          return BadgeItem(achievement: achievements[index]);
+      body: achievementsAsync.when(
+        data: (achievements) {
+          if (achievements.isEmpty) {
+            return const Center(child: Text('No achievements yet.'));
+          }
+          return GridView.builder(
+            padding: const EdgeInsets.all(16),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              childAspectRatio: 0.7,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+            ),
+            itemCount: achievements.length,
+            itemBuilder: (context, index) {
+              final entity = achievements[index];
+              // map entity to model for BadgeItem
+              final model = AchievementModel(
+                id: entity.id,
+                key: entity.key,
+                name: entity.name,
+                description: entity.description,
+                icon: entity.icon,
+                type: AchievementType.values[entity.type], // int to enum
+                targetValue: entity.targetValue,
+                currentValue: entity.currentValue,
+                xpReward: entity.xpReward,
+                isUnlocked: entity.isUnlocked,
+                unlockedAt: entity.unlockedAt,
+              );
+              return BadgeItem(achievement: model);
+            },
+          );
         },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('Error: $err')),
       ),
     );
   }

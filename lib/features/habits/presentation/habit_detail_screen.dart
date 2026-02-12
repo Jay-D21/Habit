@@ -6,6 +6,7 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../core/providers/habit_providers.dart';
 import '../../../core/providers/habit_notifier.dart';
+import '../../../core/providers/notification_providers.dart';
 import '../data/models/habit.dart';
 
 /// Habit detail screen

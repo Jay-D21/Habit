@@ -12,6 +12,7 @@ import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/signup_screen.dart';
 import '../features/auth/presentation/confirm_signup_screen.dart';
 import '../features/auth/presentation/verify_otp_screen.dart';
+import '../features/achievements/presentation/screens/badges_screen.dart';
 import '../shared/widgets/main_scaffold.dart';
 
 /// App router configuration using GoRouter
@@ -74,15 +75,6 @@ class AppRouter {
             pageBuilder: (context, state) => const NoTransitionPage(
               child: HabitsScreen(),
             ),
-            routes: [
-              GoRoute(
-                path: ':habitId',
-                parentNavigatorKey: _rootNavigatorKey,
-                builder: (context, state) => HabitDetailScreen(
-                  habitId: state.pathParameters['habitId']!,
-                ),
-              ),
-            ],
           ),
 
           // Journal
@@ -91,20 +83,6 @@ class AppRouter {
             pageBuilder: (context, state) => const NoTransitionPage(
               child: JournalScreen(),
             ),
-            routes: [
-              GoRoute(
-                path: 'new',
-                parentNavigatorKey: _rootNavigatorKey,
-                builder: (context, state) => const JournalEntryScreen(),
-              ),
-              GoRoute(
-                path: ':entryId',
-                parentNavigatorKey: _rootNavigatorKey,
-                builder: (context, state) => JournalEntryScreen(
-                  entryId: state.pathParameters['entryId'],
-                ),
-              ),
-            ],
           ),
 
           // Analytics
@@ -123,6 +101,36 @@ class AppRouter {
             ),
           ),
         ],
+      ),
+
+      // Badges (Full Screen)
+      GoRoute(
+        path: '/badges',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const BadgesScreen(),
+      ),
+
+      // Habit Detail (Full Screen)
+      GoRoute(
+        path: '/habits/:habitId',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => HabitDetailScreen(
+          habitId: state.pathParameters['habitId']!,
+        ),
+      ),
+
+      // Journal Entry (Full Screen)
+      GoRoute(
+        path: '/journal/new',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const JournalEntryScreen(),
+      ),
+      GoRoute(
+        path: '/journal/:entryId',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => JournalEntryScreen(
+          entryId: state.pathParameters['entryId'],
+        ),
       ),
     ],
   );
