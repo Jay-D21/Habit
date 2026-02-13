@@ -12,7 +12,7 @@ import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/signup_screen.dart';
 import '../features/auth/presentation/confirm_signup_screen.dart';
 import '../features/auth/presentation/verify_otp_screen.dart';
-import '../features/achievements/presentation/screens/badges_screen.dart';
+
 import '../features/focus/presentation/focus_mode_screen.dart';
 import '../shared/widgets/main_scaffold.dart';
 
@@ -108,13 +108,6 @@ class AppRouter {
         path: '/tutorial',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const OnboardingScreen(),
-      ),
-
-      // Badges (Full Screen)
-      GoRoute(
-        path: '/badges',
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const BadgesScreen(),
       ),
 
       // Habit Detail (Full Screen)
