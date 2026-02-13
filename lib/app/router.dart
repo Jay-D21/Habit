@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../features/home/presentation/home_screen.dart';
-import '../features/habits/presentation/habits_screen.dart';
+
 import '../features/habits/presentation/habit_detail_screen.dart';
 import '../features/journal/presentation/journal_screen.dart';
 import '../features/journal/presentation/journal_entry_screen.dart';
@@ -67,14 +67,6 @@ class AppRouter {
             path: '/home',
             pageBuilder: (context, state) => const NoTransitionPage(
               child: HomeScreen(),
-            ),
-          ),
-
-          // Habits
-          GoRoute(
-            path: '/habits',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: HabitsScreen(),
             ),
           ),
 

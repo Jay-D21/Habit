@@ -57,12 +57,6 @@ const _navItems = [
     path: '/home',
   ),
   _NavConfig(
-    icon: Icons.check_circle_outline_rounded,
-    activeIcon: Icons.check_circle_rounded,
-    label: 'Habits',
-    path: '/habits',
-  ),
-  _NavConfig(
     icon: Icons.timer_outlined,
     activeIcon: Icons.timer_rounded,
     label: 'Focus',
