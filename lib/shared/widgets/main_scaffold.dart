@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../app/theme/app_colors.dart';
 import '../../core/services/drive_backup_service.dart';
 import '../../core/services/ad_service.dart';
 
-/// Main scaffold with bottom navigation bar
+/// Main scaffold with minimalist bottom navigation bar
 class MainScaffold extends ConsumerStatefulWidget {
   final Widget child;
 
@@ -21,9 +20,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Check for auto-backup
       ref.read(driveBackupServiceProvider).autoBackupOrSync();
-      // Track app open for ad frequency
       ref.read(adFrequencyProvider.notifier).onAppOpen(ref);
     });
   }
@@ -37,37 +34,63 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
   }
 }
 
+// ───────────── Nav Item Config ─────────────
+class _NavConfig {
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+  final String path;
+
+  const _NavConfig({
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+    required this.path,
+  });
+}
+
+const _navItems = [
+  _NavConfig(
+    icon: Icons.home_outlined,
+    activeIcon: Icons.home_rounded,
+    label: 'Home',
+    path: '/home',
+  ),
+  _NavConfig(
+    icon: Icons.check_circle_outline_rounded,
+    activeIcon: Icons.check_circle_rounded,
+    label: 'Habits',
+    path: '/habits',
+  ),
+  _NavConfig(
+    icon: Icons.timer_outlined,
+    activeIcon: Icons.timer_rounded,
+    label: 'Focus',
+    path: '/focus',
+  ),
+  _NavConfig(
+    icon: Icons.book_outlined,
+    activeIcon: Icons.book_rounded,
+    label: 'Journal',
+    path: '/journal',
+  ),
+  _NavConfig(
+    icon: Icons.bar_chart_outlined,
+    activeIcon: Icons.bar_chart_rounded,
+    label: 'Stats',
+    path: '/analytics',
+  ),
+];
+
+// ───────────── Bottom Nav Bar ──────────────
 class _BottomNavBar extends StatelessWidget {
   const _BottomNavBar();
 
   int _getCurrentIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.toString();
-    if (location.startsWith('/home')) return 0;
-    if (location.startsWith('/habits')) return 1;
-    if (location.startsWith('/focus')) return 2;
-    if (location.startsWith('/journal')) return 3;
-    if (location.startsWith('/analytics')) return 4;
-    return 0;
-  }
-
-  void _onItemTapped(BuildContext context, int index) {
-    switch (index) {
-      case 0:
-        context.go('/home');
-        break;
-      case 1:
-        context.go('/habits');
-        break;
-      case 2:
-        context.go('/focus');
-        break;
-      case 3:
-        context.go('/journal');
-        break;
-      case 4:
-        context.go('/analytics');
-        break;
-    }
+    final matchIndex =
+        _navItems.indexWhere((item) => location.startsWith(item.path));
+    return matchIndex >= 0 ? matchIndex : 0;
   }
 
   @override
@@ -78,52 +101,33 @@ class _BottomNavBar extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
+        color: isDark ? AppColors.surfaceDark : Colors.white,
+        border: Border(
+          top: BorderSide(
+            color: isDark
+                ? AppColors.borderDark.withValues(alpha: 0.3)
+                : AppColors.borderLight.withValues(alpha: 0.5),
+            width: 0.5,
           ),
-        ],
+        ),
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _NavItem(
-                icon: Icons.home_rounded,
-                label: 'Home',
-                isSelected: currentIndex == 0,
-                onTap: () => _onItemTapped(context, 0),
-              ),
-              _NavItem(
-                icon: Icons.check_circle_rounded,
-                label: 'Habits',
-                isSelected: currentIndex == 1,
-                onTap: () => _onItemTapped(context, 1),
-              ),
-              _NavItem(
-                icon: Icons.timer_rounded,
-                label: 'Focus',
-                isSelected: currentIndex == 2,
-                onTap: () => _onItemTapped(context, 2),
-              ),
-              _NavItem(
-                icon: Icons.book_rounded,
-                label: 'Journal',
-                isSelected: currentIndex == 3,
-                onTap: () => _onItemTapped(context, 3),
-              ),
-              _NavItem(
-                icon: Icons.bar_chart_rounded,
-                label: 'Stats',
-                isSelected: currentIndex == 4,
-                onTap: () => _onItemTapped(context, 4),
-              ),
-            ],
+            children: _navItems.asMap().entries.map((entry) {
+              final i = entry.key;
+              final item = entry.value;
+              final isSelected = i == currentIndex;
+
+              return _NavItem(
+                icon: isSelected ? item.activeIcon : item.icon,
+                label: item.label,
+                isSelected: isSelected,
+                onTap: () => context.go(item.path),
+              );
+            }).toList(),
           ),
         ),
       ),
@@ -131,6 +135,7 @@ class _BottomNavBar extends StatelessWidget {
   }
 }
 
+// ───────────── Single Nav Item ─────────────
 class _NavItem extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -147,38 +152,38 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final color = isSelected
+        ? AppColors.primary
+        : theme.colorScheme.onSurface.withValues(alpha: 0.4);
 
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primary.withValues(alpha: 0.1)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
+      child: SizedBox(
+        width: 64,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 24,
-              color: isSelected
-                  ? AppColors.primary
-                  : theme.colorScheme.onSurface.withValues(alpha: 0.5),
-            )
-                .animate(target: isSelected ? 1 : 0)
-                .scale(begin: const Offset(1, 1), end: const Offset(1.1, 1.1)),
-            const SizedBox(height: 4),
+            // Pill indicator
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: isSelected ? 32 : 0,
+              height: 3,
+              margin: const EdgeInsets.only(bottom: 4),
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            // Icon
+            Icon(icon, size: 22, color: color),
+            const SizedBox(height: 2),
+            // Label
             Text(
               label,
               style: theme.textTheme.labelSmall?.copyWith(
-                color: isSelected
-                    ? AppColors.primary
-                    : theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                color: color,
+                fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),

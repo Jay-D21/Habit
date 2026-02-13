@@ -67,7 +67,7 @@ class GreetingHeader extends ConsumerWidget {
               ),
               // Settings gear icon
               GestureDetector(
-                onTap: () => context.go('/settings'),
+                onTap: () => context.push('/settings'),
                 child: Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(

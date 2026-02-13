@@ -20,7 +20,6 @@ class BadgesScreen extends ConsumerWidget {
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.transparent,
-        foregroundColor: Colors.black,
       ),
       body: achievementsAsync.when(
         data: (achievements) {

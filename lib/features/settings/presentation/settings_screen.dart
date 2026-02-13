@@ -33,22 +33,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final awsAuthState = ref.watch(awsAuthProvider);
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Settings'),
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
-              Padding(
-                padding: const EdgeInsets.all(AppTheme.spacingLg),
-                child: Text(
-                  'Settings',
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ).animate().fadeIn(),
-
               // Account Section
               _SettingsSection(
                 title: 'Account',
@@ -281,6 +276,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ],
               ).animate().fadeIn(delay: 350.ms),
+
+              const SizedBox(height: AppTheme.spacingMd),
+
+              // Tutorial
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
+                child: _SettingsTile(
+                  icon: Icons.school_rounded,
+                  title: 'View Tutorial',
+                  onTap: () => context.push('/tutorial'),
+                ),
+              ).animate().fadeIn(delay: 375.ms),
 
               const SizedBox(height: AppTheme.spacingLg),
 

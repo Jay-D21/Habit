@@ -19,80 +19,56 @@ class HomeScreen extends ConsumerWidget {
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
-            // Greeting Header (Has date/greeting + mini stats)
+            // Greeting + Settings gear
             SliverToBoxAdapter(
-              child: const GreetingHeader()
-                  .animate()
-                  .fadeIn(duration: 400.ms)
-                  .slideY(begin: -0.1, end: 0),
+              child: const GreetingHeader().animate().fadeIn(duration: 300.ms),
             ),
 
-            // Streak Cards (Quick stats)
+            // Streak Cards
             SliverToBoxAdapter(
               child: const StreakCards()
                   .animate()
-                  .fadeIn(duration: 400.ms, delay: 100.ms)
-                  .slideY(begin: 0.1, end: 0),
+                  .fadeIn(duration: 300.ms, delay: 50.ms),
             ),
 
-            // Motivational Quote
-            SliverToBoxAdapter(
-              child: const Padding(
-                padding: EdgeInsets.only(top: 16),
-                child: MotivationalQuoteCard(),
-              )
-                  .animate()
-                  .fadeIn(duration: 400.ms, delay: 150.ms)
-                  .slideY(begin: 0.1, end: 0),
-            ),
-
-            // Today's Habits Section (Main Content)
+            // Quote
             const SliverToBoxAdapter(
-              child: SizedBox(height: 16),
-            ),
-            SliverToBoxAdapter(
-              child: const TodayHabitsSection()
-                  .animate()
-                  .fadeIn(duration: 400.ms, delay: 200.ms)
-                  .slideY(begin: 0.1, end: 0),
+              child: Padding(
+                padding: EdgeInsets.only(top: 12),
+                child: MotivationalQuoteCard(),
+              ),
             ),
 
-            // Daily Progress Chart (Line Graph)
-            SliverToBoxAdapter(
-              child: const Padding(
-                padding: EdgeInsets.only(top: 16),
+            // Today's Habits
+            const SliverToBoxAdapter(child: SizedBox(height: 12)),
+            const SliverToBoxAdapter(child: TodayHabitsSection()),
+
+            // Daily Progress Chart
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.only(top: 12),
                 child: DailyProgressChart(),
-              )
-                  .animate()
-                  .fadeIn(duration: 400.ms, delay: 250.ms)
-                  .slideY(begin: 0.1, end: 0),
+              ),
             ),
 
             // Weekly Overview
-            SliverToBoxAdapter(
-              child: const Padding(
-                padding: EdgeInsets.only(top: 16),
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.only(top: 12),
                 child: WeeklyOverview(),
-              )
-                  .animate()
-                  .fadeIn(duration: 400.ms, delay: 300.ms)
-                  .slideY(begin: 0.1, end: 0),
+              ),
             ),
 
             // Banner Ad
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.only(top: 16),
-                child: const BannerAdWidget()
-                    .animate()
-                    .fadeIn(duration: 400.ms, delay: 350.ms),
+                padding: const EdgeInsets.only(top: 12),
+                child: const BannerAdWidget(),
               ),
             ),
 
             // Bottom padding
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 100),
-            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 80)),
           ],
         ),
       ),

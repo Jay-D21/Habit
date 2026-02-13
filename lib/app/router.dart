@@ -94,14 +94,6 @@ class AppRouter {
             ),
           ),
 
-          // Settings
-          GoRoute(
-            path: '/settings',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: SettingsScreen(),
-            ),
-          ),
-
           // Focus Mode
           GoRoute(
             path: '/focus',
@@ -110,6 +102,20 @@ class AppRouter {
             ),
           ),
         ],
+      ),
+
+      // Settings (Full Screen with back button)
+      GoRoute(
+        path: '/settings',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const SettingsScreen(),
+      ),
+
+      // Tutorial (re-viewable onboarding)
+      GoRoute(
+        path: '/tutorial',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const OnboardingScreen(),
       ),
 
       // Badges (Full Screen)
