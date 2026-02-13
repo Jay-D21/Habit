@@ -93,15 +93,18 @@ class AppRouter {
               child: FocusModeScreen(),
             ),
           ),
+
+          // Settings (inside shell for bottom nav)
+          GoRoute(
+            path: '/settings',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: SettingsScreen(),
+            ),
+          ),
         ],
       ),
 
-      // Settings (Full Screen with back button)
-      GoRoute(
-        path: '/settings',
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const SettingsScreen(),
-      ),
+      // (Settings moved inside ShellRoute above)
 
       // Tutorial (re-viewable onboarding)
       GoRoute(

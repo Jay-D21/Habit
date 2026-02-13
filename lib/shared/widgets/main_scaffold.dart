@@ -74,6 +74,12 @@ const _navItems = [
     label: 'Stats',
     path: '/analytics',
   ),
+  _NavConfig(
+    icon: Icons.settings_outlined,
+    activeIcon: Icons.settings_rounded,
+    label: 'Settings',
+    path: '/settings',
+  ),
 ];
 
 // ───────────── Bottom Nav Bar ──────────────

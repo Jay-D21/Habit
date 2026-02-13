@@ -4,10 +4,12 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:fl_chart/fl_chart.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../core/providers/habit_providers.dart';
 import '../../../core/providers/habit_notifier.dart';
+import '../../../core/providers/gamification_providers.dart';
 import '../../../core/services/ad_service.dart';
 import '../../habits/data/models/habit.dart';
 import 'widgets/today_habits_section.dart';
@@ -29,6 +31,53 @@ List<DateTime> _lastNDays(int count, DateTime anchor) {
   );
 }
 
+// ──────────── Motivational Quotes ────────────
+
+const _quotes = [
+  '"The secret of getting ahead is getting started." — Mark Twain',
+  '"Small daily improvements lead to staggering long-term results."',
+  '"We are what we repeatedly do. Excellence is a habit." — Aristotle',
+  '"Success is the sum of small efforts, repeated." — Robert Collier',
+  '"A journey of a thousand miles begins with a single step." — Lao Tzu',
+  '"Don\'t watch the clock; do what it does. Keep going." — Sam Levenson',
+  '"Motivation is what gets you started. Habit keeps you going." — Jim Ryun',
+  '"It does not matter how slowly you go as long as you do not stop." — Confucius',
+  '"Believe you can and you\'re halfway there." — Theodore Roosevelt',
+  '"You don\'t have to be great to start, but you have to start to be great."',
+];
+
+String _todayQuote() {
+  final dayOfYear =
+      DateTime.now().difference(DateTime(DateTime.now().year)).inDays;
+  return _quotes[dayOfYear % _quotes.length];
+}
+
+// ──────────── Weekly Progress Provider ────────────
+
+final weeklyProgressProvider = FutureProvider<List<double>>((ref) async {
+  final habits = await ref.read(habitsProvider.future);
+  if (habits.isEmpty) return List.filled(7, 0.0);
+
+  final now = DateTime.now();
+  final repo = ref.read(habitRepositoryProvider);
+
+  final List<double> rates = [];
+  for (int i = 6; i >= 0; i--) {
+    final day = DateTime(now.year, now.month, now.day - i);
+    int completed = 0;
+    for (final habit in habits) {
+      final completions = await repo.getCompletionsForHabit(
+        habit.id!,
+        day,
+        day.add(const Duration(hours: 23, minutes: 59)),
+      );
+      if (completions.isNotEmpty) completed++;
+    }
+    rates.add(habits.isNotEmpty ? (completed / habits.length * 100) : 0);
+  }
+  return rates;
+});
+
 // ──────────── Home Screen ────────────
 
 class HomeScreen extends ConsumerWidget {
@@ -37,17 +86,19 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final now = DateTime.now();
     final days = _lastNDays(5, now);
     final habitsAsync = ref.watch(habitsProvider);
     final streakAsync = ref.watch(overallStreakProvider);
     final todayProgress = ref.watch(todayProgressProvider);
+    final xpAsync = ref.watch(userProgressProvider);
 
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
-            // ─── Header: Settings gear + App name + Stats + Add ───
+            // ─── Header Row ───
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppTheme.spacingLg,
@@ -55,27 +106,43 @@ class HomeScreen extends ConsumerWidget {
               ),
               child: Row(
                 children: [
-                  // Settings gear
-                  GestureDetector(
-                    onTap: () => context.push('/settings'),
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surfaceContainerHighest
-                            .withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.settings_outlined,
-                        size: 20,
-                        color:
-                            theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                      ),
-                    ),
+                  // XP badge
+                  xpAsync.when(
+                    data: (progress) {
+                      final xp = progress?.xp ?? 0;
+                      final level = progress?.level ?? 1;
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF6C5CE7), Color(0xFFA29BFE)],
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('⚡', style: TextStyle(fontSize: 12)),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Lv$level · ${xp}XP',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                    loading: () => const SizedBox.shrink(),
+                    error: (_, __) => const SizedBox.shrink(),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
 
-                  // App Name
+                  // App name
                   Text(
                     'Habit',
                     style: theme.textTheme.titleMedium?.copyWith(
@@ -94,7 +161,7 @@ class HomeScreen extends ConsumerWidget {
 
                   const Spacer(),
 
-                  // Streak icon
+                  // Streak
                   Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -149,7 +216,7 @@ class HomeScreen extends ConsumerWidget {
                   ),
                   const SizedBox(width: 12),
 
-                  // Add habit button
+                  // Add habit
                   GestureDetector(
                     onTap: () {
                       showModalBottomSheet(
@@ -176,9 +243,37 @@ class HomeScreen extends ConsumerWidget {
               ),
             ).animate().fadeIn(duration: 200.ms),
 
-            const SizedBox(height: 12),
+            // ─── Motivational Quote ───
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppTheme.spacingLg, vertical: 4),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? AppColors.primary.withValues(alpha: 0.08)
+                      : AppColors.primary.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                  ),
+                ),
+                child: Text(
+                  _todayQuote(),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontStyle: FontStyle.italic,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                    height: 1.4,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ).animate().fadeIn(delay: 100.ms),
 
-            // ─── "Last 5 days" label + Day headers ───
+            const SizedBox(height: 8),
+
+            // ─── Day headers ───
             Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
@@ -187,7 +282,7 @@ class HomeScreen extends ConsumerWidget {
 
             const SizedBox(height: 8),
 
-            // ─── Habit Rows ───
+            // ─── Habit Rows + Weekly Chart + Ad ───
             Expanded(
               child: habitsAsync.when(
                 data: (habits) {
@@ -195,21 +290,30 @@ class HomeScreen extends ConsumerWidget {
                   return ListView.builder(
                     padding: const EdgeInsets.symmetric(
                         horizontal: AppTheme.spacingLg),
-                    itemCount: habits.length + 1, // +1 for ad
+                    itemCount: habits.length + 2, // +1 chart, +1 ad
                     itemBuilder: (context, index) {
-                      if (index == habits.length) {
-                        return const Padding(
-                          padding: EdgeInsets.only(top: 16, bottom: 80),
-                          child: BannerAdWidget(),
-                        );
+                      // Habit rows
+                      if (index < habits.length) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: _HabitRow(habit: habits[index], days: days),
+                        )
+                            .animate()
+                            .fadeIn(delay: (50 * index).ms)
+                            .slideX(begin: 0.1, duration: 200.ms);
                       }
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: _HabitRow(habit: habits[index], days: days),
-                      )
-                          .animate()
-                          .fadeIn(delay: (50 * index).ms)
-                          .slideX(begin: 0.1, duration: 200.ms);
+                      // Weekly chart
+                      if (index == habits.length) {
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 16, bottom: 12),
+                          child: _WeeklyChart(isDark: isDark),
+                        ).animate().fadeIn(delay: 200.ms);
+                      }
+                      // Ad
+                      return const Padding(
+                        padding: EdgeInsets.only(bottom: 80),
+                        child: BannerAdWidget(),
+                      );
                     },
                   );
                 },
@@ -219,6 +323,119 @@ class HomeScreen extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ──────────── Weekly Line Chart ────────────
+
+class _WeeklyChart extends ConsumerWidget {
+  final bool isDark;
+  const _WeeklyChart({required this.isDark});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final weeklyAsync = ref.watch(weeklyProgressProvider);
+    final now = DateTime.now();
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : AppColors.cardLight,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Weekly Progress',
+              style: theme.textTheme.titleSmall
+                  ?.copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 120,
+            child: weeklyAsync.when(
+              data: (data) => LineChart(
+                LineChartData(
+                  minY: 0,
+                  maxY: 100,
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    horizontalInterval: 50,
+                    getDrawingHorizontalLine: (value) => FlLine(
+                      color:
+                          theme.colorScheme.onSurface.withValues(alpha: 0.05),
+                      strokeWidth: 1,
+                    ),
+                  ),
+                  titlesData: FlTitlesData(
+                    leftTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
+                    topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        interval: 1,
+                        getTitlesWidget: (value, _) {
+                          final day =
+                              now.subtract(Duration(days: 6 - value.toInt()));
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Text(
+                              DateFormat('E').format(day).substring(0, 2),
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                fontSize: 9,
+                                color: theme.colorScheme.onSurface
+                                    .withValues(alpha: 0.4),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: data
+                          .asMap()
+                          .entries
+                          .map((e) => FlSpot(e.key.toDouble(), e.value))
+                          .toList(),
+                      isCurved: true,
+                      color: AppColors.primary,
+                      barWidth: 3,
+                      isStrokeCapRound: true,
+                      dotData: FlDotData(
+                        show: true,
+                        getDotPainter: (spot, percent, bar, index) =>
+                            FlDotCirclePainter(
+                          radius: 3,
+                          color: AppColors.primary,
+                          strokeWidth: 0,
+                        ),
+                      ),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (_, __) => const SizedBox.shrink(),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -278,7 +495,7 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-// ──────────── Day Headers (Last 5 days label + Mo 9, Tu 10...) ────────────
+// ──────────── Day Headers ────────────
 
 class _DayHeaders extends StatelessWidget {
   final List<DateTime> days;
@@ -292,7 +509,6 @@ class _DayHeaders extends StatelessWidget {
 
     return Row(
       children: [
-        // "Last 5 days" chip
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
@@ -312,7 +528,6 @@ class _DayHeaders extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        // Day columns
         ...days.map((day) {
           final isToday = day == todayNorm;
           return SizedBox(
@@ -346,7 +561,7 @@ class _DayHeaders extends StatelessWidget {
   }
 }
 
-// ──────────── Habit Row (emoji + name + 5 tappable squares) ────────────
+// ──────────── Habit Row ────────────
 
 class _HabitRow extends ConsumerWidget {
   final Habit habit;
@@ -360,9 +575,6 @@ class _HabitRow extends ConsumerWidget {
     final isDark = theme.brightness == Brightness.dark;
     final color = _parseColor(habit.colorHex);
 
-    // We get month completions for the month of the LAST day in our range
-    // This is a simplification; ideally we'd query range or fetch needed months.
-    // Since range is 5 days, it's almost always one month, rarely spans two.
     final month = DateTime(days.last.year, days.last.month);
 
     final completedDaysAsync = ref.watch(
@@ -390,7 +602,6 @@ class _HabitRow extends ConsumerWidget {
         ),
         child: Row(
           children: [
-            // Emoji Container
             Container(
               width: 40,
               height: 40,
@@ -403,8 +614,6 @@ class _HabitRow extends ConsumerWidget {
               ),
             ),
             const SizedBox(width: 12),
-
-            // Name (takes remaining space before squares)
             Expanded(
               child: Text(
                 habit.name,
@@ -415,8 +624,6 @@ class _HabitRow extends ConsumerWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-
-            // 5 day squares
             ...days.map((day) {
               return completedDaysAsync.when(
                 data: (completed) {
@@ -434,7 +641,7 @@ class _HabitRow extends ConsumerWidget {
                           .toggleHabitForDate(habit.id!, day);
                     },
                     child: Container(
-                      width: 28, // Slightly smaller squares for cleaner look
+                      width: 28,
                       height: 28,
                       margin: const EdgeInsets.only(left: 8),
                       decoration: BoxDecoration(
