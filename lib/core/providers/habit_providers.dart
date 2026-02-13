@@ -75,21 +75,31 @@ final habitStreakProvider =
 final overallStreakProvider = FutureProvider<int>((ref) async {
   final today = ref.watch(todayProvider);
   final db = ref.watch(databaseProvider);
+  final habits = await ref.read(habitsProvider.future);
+
+  if (habits.isEmpty) return 0;
+
   var currentDate = today;
   var streak = 0;
+  var lookbackAttempts = 0;
+  const maxLookback = 2; // Only check today and yesterday when streak==0
 
   while (true) {
-    final completions = await db.getTodayCompletions();
-    // Check if there are any completions for currentDate
-    final hasCompletion = completions.any((c) {
-      final cDate = DateTime(c.date.year, c.date.month, c.date.day);
-      final checkDate =
-          DateTime(currentDate.year, currentDate.month, currentDate.day);
-      return cDate == checkDate;
-    });
+    // Check each habit for a completion on currentDate
+    bool anyCompleted = false;
+    for (final habit in habits) {
+      if (habit.id == null) continue;
+      final completion = await db.getCompletionForDate(habit.id!, currentDate);
+      if (completion != null) {
+        anyCompleted = true;
+        break;
+      }
+    }
 
-    if (!hasCompletion) {
-      if (streak == 0) {
+    if (!anyCompleted) {
+      // If we haven't started a streak yet, allow checking yesterday
+      if (streak == 0 && lookbackAttempts < maxLookback) {
+        lookbackAttempts++;
         currentDate = currentDate.subtract(const Duration(days: 1));
         continue;
       }
