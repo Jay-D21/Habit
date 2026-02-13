@@ -135,6 +135,30 @@ class HabitNotifier extends Notifier<void> {
       await completeHabit(habitId);
     }
   }
+
+  /// Toggle habit completion for a specific date
+  Future<void> toggleHabitForDate(int habitId, DateTime date) async {
+    final repository = ref.read(habitRepositoryProvider);
+    final normalized = DateTime(date.year, date.month, date.day);
+    final start = normalized;
+    final end = normalized.add(const Duration(days: 1));
+
+    final completions =
+        await repository.getCompletionsForHabit(habitId, start, end);
+    final isCompleted = completions.isNotEmpty;
+
+    if (isCompleted) {
+      await repository.uncompleteHabitForDate(habitId, date);
+    } else {
+      await repository.completeHabitForDate(habitId, date);
+    }
+
+    // Refresh data
+    ref.invalidate(todayCompletionsProvider);
+    ref.invalidate(habitMonthCompletionsProvider);
+    // Also invalidate the specific provider used by habit cards if needed,
+    // though the watch should handle it if params match.
+  }
 }
 
 /// Provider for habit operations

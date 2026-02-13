@@ -60,10 +60,10 @@ class HomeScreen extends ConsumerWidget {
             ),
 
             // Banner Ad
-            SliverToBoxAdapter(
+            const SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: const BannerAdWidget(),
+                padding: EdgeInsets.only(top: 12),
+                child: BannerAdWidget(),
               ),
             ),
 

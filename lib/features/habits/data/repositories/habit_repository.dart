@@ -188,6 +188,28 @@ class HabitRepository {
     await _db.deleteCompletionForDate(habitId, today);
   }
 
+  /// Complete a habit for a specific date (not just today)
+  Future<void> completeHabitForDate(int habitId, DateTime date) async {
+    final normalized = DateTime(date.year, date.month, date.day);
+    final existing = await _db.getCompletionForDate(habitId, normalized);
+
+    if (existing != null) return; // Already completed - no-op
+
+    final completion = HabitCompletionsCompanion(
+      habitId: Value(habitId),
+      date: Value(normalized),
+      count: const Value(1),
+      completedAt: Value(DateTime.now()),
+    );
+    await _db.insertCompletion(completion);
+  }
+
+  /// Uncomplete a habit for a specific date (not just today)
+  Future<void> uncompleteHabitForDate(int habitId, DateTime date) async {
+    final normalized = DateTime(date.year, date.month, date.day);
+    await _db.deleteCompletionForDate(habitId, normalized);
+  }
+
   /// Get completions for a habit in a date range
   Future<List<HabitCompletionModel>> getCompletionsForHabit(
     int habitId,
