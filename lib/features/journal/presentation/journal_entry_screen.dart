@@ -154,6 +154,10 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () => context.pop(),
+        ),
         title: Text(_isEditing ? 'Edit Entry' : 'New Entry'),
         actions: [
           TextButton(
