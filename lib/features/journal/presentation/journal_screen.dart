@@ -46,7 +46,7 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
                         ),
                       ),
                       ElevatedButton.icon(
-                        onPressed: () => context.go('/journal/new'),
+                        onPressed: () => context.push('/journal/new'),
                         icon: const Icon(Icons.add_rounded, size: 20),
                         label: const Text('New Entry'),
                         style: ElevatedButton.styleFrom(
@@ -391,7 +391,7 @@ class _CalendarView extends ConsumerWidget {
                   onTap: () {
                     // Navigate to day view or entries list for day?
                     // For now keeping it simple: New Entry
-                    context.go('/journal/new');
+                    context.push('/journal/new');
                   },
                   child: Container(
                     decoration: BoxDecoration(
