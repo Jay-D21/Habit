@@ -11,6 +11,7 @@ import '../../../habits/data/models/habit.dart';
 import '../../../../core/models/priority_enum.dart';
 import '../../../../shared/widgets/priority_selector_widget.dart';
 import '../../../habits/presentation/widgets/habit_card.dart';
+import '../../../../shared/widgets/icon_emoji_picker.dart';
 
 /// Today's habits section with habit list
 class TodayHabitsSection extends ConsumerWidget {
@@ -184,25 +185,31 @@ class AddHabitSheetState extends ConsumerState<AddHabitSheet> {
   int _targetCount = 1;
   bool _reminderEnabled = false;
   TimeOfDay? _reminderTime;
+  bool _showAdvanced = false;
+  int _selectedColorIndex = 0;
 
-  // 50+ emojis organized by category
-  final _emojis = [
-    // Health & Wellness
-    '💧', '🥗', '🍎', '🥦', '🧘', '💊', '🩺', '❤️', '🫀', '🧠',
-    // Fitness
-    '🏃', '💪', '🚴', '🏋️', '🤸', '⚽', '🏊', '🎾', '🧗', '🚶',
-    // Mindfulness & Self-care
-    '🧘', '🙏', '😌', '🌸', '✨', '🌙', '☀️', '🌅', '🔮', '🕯️',
-    // Learning & Productivity
-    '📚', '📖', '✍️', '🎯', '📝', '💻', '🧮', '🎓', '🔬', '📊',
-    // Creativity
-    '🎨', '🎵', '🎸', '📷', '🎬', '✏️', '🎭', '🪡', '🎹', '🎤',
-    // Finance
-    '💰', '📈', '💵', '🏦', '💳', '🧾', '💎', '📉', '🪙', '💲',
-    // Social
-    '👋', '🤝', '💬', '📞', '👨‍👩‍👧', '❤️', '🎁', '🎉', '👥', '🙌',
-    // Sleep & Rest
-    '💤', '🛏️', '😴', '🌙', '⏰', '☕', '🧹', '🏠', '🚿', '🪥',
+  // Vibrant color palette matching the screenshots
+  static const _colorPalette = <Color>[
+    Color(0xFFFF2D55), // Coral/Red
+    Color(0xFFFF6B35), // Orange
+    Color(0xFFFF9500), // Deep Orange
+    Color(0xFFFFCC00), // Yellow
+    Color(0xFFC8E600), // Yellow-Green
+    Color(0xFF34C759), // Green
+    Color(0xFF30D158), // Bright Green
+    Color(0xFF00C7BE), // Teal
+    Color(0xFF32D6E2), // Cyan
+    Color(0xFF5AC8FA), // Light Blue
+    Color(0xFF007AFF), // Blue
+    Color(0xFF5856D6), // Indigo
+    Color(0xFFAF52DE), // Purple
+    Color(0xFFFF2D96), // Magenta
+    Color(0xFFFF6B81), // Pink
+    Color(0xFFFF69B4), // Hot Pink
+    Color(0xFFB0BEC5), // Blue-Grey Light
+    Color(0xFFFF4081), // Pink accent
+    Color(0xFF90A4AE), // Grey-Blue
+    Color(0xFF78909C), // Blue-Grey
   ];
 
   @override
@@ -216,300 +223,442 @@ class AddHabitSheetState extends ConsumerState<AddHabitSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final selectedColor = _colorPalette[_selectedColorIndex];
 
     return Container(
+      height: MediaQuery.of(context).size.height * 0.92,
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.cardDark : AppColors.cardLight,
+        color: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
         borderRadius: const BorderRadius.vertical(
           top: Radius.circular(AppTheme.radiusXl),
         ),
       ),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppTheme.spacingLg),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Handle
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: AppTheme.spacingLg),
-
-            // Header with close button
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        children: [
+          // Header
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 12, 16, 0),
+            child: Row(
               children: [
-                const SizedBox(width: 40), // Balance the close button
-                Text(
-                  'Create New Habit',
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
                 IconButton(
                   icon: Icon(
                     Icons.close_rounded,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                   ),
                   onPressed: () => Navigator.pop(context),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
+                ),
+                Text(
+                  'New Habit',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: AppTheme.spacingXl),
+          ),
 
-            // Emoji selector
-            Text(
-              'Choose an emoji',
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: AppTheme.spacingSm),
-            Wrap(
-              spacing: AppTheme.spacingSm,
-              children: _emojis.map((emoji) {
-                final isSelected = _selectedEmoji == emoji;
-                return GestureDetector(
-                  onTap: () => setState(() => _selectedEmoji = emoji),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
-                    padding: const EdgeInsets.all(AppTheme.spacingSm),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? AppColors.primary.withValues(alpha: 0.1)
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-                      border: Border.all(
-                        color: isSelected
-                            ? AppColors.primary
-                            : theme.colorScheme.onSurface
-                                .withValues(alpha: 0.1),
-                        width: isSelected ? 2 : 1,
+          // Scrollable content
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Icon preview with faded grid background
+                  _buildIconPreview(theme, isDark, selectedColor),
+                  const SizedBox(height: 24),
+
+                  // Name
+                  Text('Name',
+                      style: theme.textTheme.labelLarge
+                          ?.copyWith(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor:
+                          isDark ? AppColors.cardDark : AppColors.cardLight,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
                       ),
                     ),
-                    child: Text(emoji, style: const TextStyle(fontSize: 28)),
+                    textCapitalization: TextCapitalization.words,
                   ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: AppTheme.spacingLg),
+                  const SizedBox(height: 20),
 
-            // Name input
-            Text(
-              'Habit name',
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: AppTheme.spacingSm),
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                hintText: 'e.g., Morning Meditation',
-              ),
-              textCapitalization: TextCapitalization.words,
-            ),
-            const SizedBox(height: AppTheme.spacingLg),
-
-            // Description input
-            Text(
-              'Description (Optional)',
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: AppTheme.spacingSm),
-            TextField(
-              controller: _descriptionController,
-              decoration: const InputDecoration(
-                hintText: 'Motivation or details...',
-              ),
-              textCapitalization: TextCapitalization.sentences,
-              maxLines: 2,
-              minLines: 1,
-            ),
-            const SizedBox(height: AppTheme.spacingLg),
-
-            // Category dropdown
-            Text(
-              'Category',
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: AppTheme.spacingSm),
-            DropdownButtonFormField<HabitCategory>(
-              initialValue: _selectedCategory,
-              decoration: const InputDecoration(),
-              items: HabitCategory.values.map((cat) {
-                return DropdownMenuItem(
-                  value: cat,
-                  child:
-                      Text(cat.name[0].toUpperCase() + cat.name.substring(1)),
-                );
-              }).toList(),
-              onChanged: (value) => setState(() => _selectedCategory = value!),
-            ),
-            const SizedBox(height: AppTheme.spacingLg),
-
-            // Priority Selector
-            PrioritySelectorWidget(
-              selectedPriority: _selectedPriority,
-              onPriorityChanged: (p) => setState(() => _selectedPriority = p),
-            ),
-            const SizedBox(height: AppTheme.spacingLg),
-
-            // Frequency dropdown
-            Text(
-              'Frequency',
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: AppTheme.spacingSm),
-            InputDecorator(
-              decoration: const InputDecoration(
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<HabitFrequency>(
-                  value: _selectedFrequency,
-                  isExpanded: true,
-                  items: const [
-                    DropdownMenuItem(
-                      value: HabitFrequency.daily,
-                      child: Text('Every Day'),
+                  // Description
+                  Text('Description',
+                      style: theme.textTheme.labelLarge
+                          ?.copyWith(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _descriptionController,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor:
+                          isDark ? AppColors.cardDark : AppColors.cardLight,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
-                    DropdownMenuItem(
-                      value: HabitFrequency.weekdays,
-                      child: Text('Weekdays (Mon-Fri)'),
-                    ),
-                    DropdownMenuItem(
-                      value: HabitFrequency.weekends,
-                      child: Text('Weekends (Sat-Sun)'),
-                    ),
-                  ],
-                  onChanged: (value) =>
-                      setState(() => _selectedFrequency = value!),
-                ),
-              ),
-            ),
-            const SizedBox(height: AppTheme.spacingLg),
-
-            // Target count
-            Text(
-              'Daily target',
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: AppTheme.spacingSm),
-            Row(
-              children: [
-                IconButton(
-                  onPressed: _targetCount > 1
-                      ? () => setState(() => _targetCount--)
-                      : null,
-                  icon: const Icon(Icons.remove_rounded),
-                ),
-                Text(
-                  '$_targetCount',
-                  style: theme.textTheme.headlineSmall,
-                ),
-                IconButton(
-                  onPressed: () => setState(() => _targetCount++),
-                  icon: const Icon(Icons.add_rounded),
-                ),
-                const SizedBox(width: AppTheme.spacingMd),
-                Text(
-                  _targetCount == 1 ? 'time per day' : 'times per day',
-                  style: theme.textTheme.bodyMedium,
-                ),
-              ],
-            ),
-            const SizedBox(height: AppTheme.spacingXl),
-
-            // Notifications
-            Text(
-              'Reminders',
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            SwitchListTile(
-              title: const Text('Enable Notifications'),
-              value: _reminderEnabled,
-              onChanged: (val) async {
-                if (val) {
-                  // Request permissions first
-                  final granted = await ref
-                      .read(notificationServiceProvider)
-                      .requestPermissions();
-                  if (!granted && context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Notification permissions denied')),
-                    );
-                    return;
-                  }
-                  // Set default time if null
-                  if (_reminderTime == null) {
-                    setState(() =>
-                        _reminderTime = const TimeOfDay(hour: 9, minute: 0));
-                  }
-                }
-                setState(() => _reminderEnabled = val);
-              },
-            ),
-            if (_reminderEnabled && _reminderTime != null)
-              ListTile(
-                title: const Text('Reminder Time'),
-                trailing: Text(
-                  _reminderTime!.format(context),
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
+                    textCapitalization: TextCapitalization.sentences,
+                    maxLines: 2,
+                    minLines: 1,
                   ),
-                ),
-                onTap: () async {
-                  final time = await showTimePicker(
-                    context: context,
-                    initialTime: _reminderTime!,
-                  );
-                  if (time != null) {
-                    setState(() => _reminderTime = time);
-                  }
-                },
-              ),
-            const SizedBox(height: AppTheme.spacingLg),
+                  const SizedBox(height: 20),
 
-            // Create button
-            SizedBox(
+                  // Color
+                  Text('Color',
+                      style: theme.textTheme.labelLarge
+                          ?.copyWith(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 12),
+                  _buildColorGrid(isDark),
+                  const SizedBox(height: 20),
+
+                  // Advanced Options (collapsible)
+                  _buildAdvancedOptions(theme, isDark),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
+          ),
+
+          // Save button
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            child: SizedBox(
               width: double.infinity,
+              height: 52,
               child: ElevatedButton(
                 onPressed: _createHabit,
-                child: const Text('Create Habit'),
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: const Text('Save',
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               ),
             ),
-            const SizedBox(height: AppTheme.spacingMd),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIconPreview(ThemeData theme, bool isDark, Color selectedColor) {
+    return GestureDetector(
+      onTap: _openIconPicker,
+      child: SizedBox(
+        height: 140,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // Faded icon grid background
+            Opacity(
+              opacity: 0.15,
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                alignment: WrapAlignment.center,
+                children: const [
+                  Icon(Icons.camera_alt_outlined, size: 20),
+                  Icon(Icons.podcasts_outlined, size: 20),
+                  Icon(Icons.directions_run_outlined, size: 20),
+                  Icon(Icons.self_improvement_outlined, size: 20),
+                  Icon(Icons.fitness_center_outlined, size: 20),
+                  Icon(Icons.menu_book_outlined, size: 20),
+                  Icon(Icons.music_note_outlined, size: 20),
+                  Icon(Icons.code_outlined, size: 20),
+                  Icon(Icons.palette_outlined, size: 20),
+                  Icon(Icons.water_drop_outlined, size: 20),
+                  Icon(Icons.restaurant_outlined, size: 20),
+                  Icon(Icons.school_outlined, size: 20),
+                  Icon(Icons.directions_bike_outlined, size: 20),
+                  Icon(Icons.spa_outlined, size: 20),
+                  Icon(Icons.work_outline, size: 20),
+                  Icon(Icons.home_outlined, size: 20),
+                  Icon(Icons.headphones_outlined, size: 20),
+                  Icon(Icons.piano_outlined, size: 20),
+                  Icon(Icons.hiking_outlined, size: 20),
+                  Icon(Icons.savings_outlined, size: 20),
+                  Icon(Icons.pets_outlined, size: 20),
+                  Icon(Icons.nightlife_outlined, size: 20),
+                  Icon(Icons.coffee_outlined, size: 20),
+                  Icon(Icons.sports_basketball_outlined, size: 20),
+                  Icon(Icons.photo_camera_outlined, size: 20),
+                  Icon(Icons.bed_outlined, size: 20),
+                  Icon(Icons.task_alt_outlined, size: 20),
+                  Icon(Icons.laptop_mac_outlined, size: 20),
+                  Icon(Icons.local_hospital_outlined, size: 20),
+                  Icon(Icons.brush_outlined, size: 20),
+                  Icon(Icons.forum_outlined, size: 20),
+                  Icon(Icons.yard_outlined, size: 20),
+                ],
+              ),
+            ),
+            // Large circular preview
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isDark ? Colors.grey.shade900 : Colors.grey.shade200,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    blurRadius: 16,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: Center(
+                child: buildIconEmojiDisplay(_selectedEmoji,
+                    size: 36, color: theme.colorScheme.onSurface),
+              ),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildColorGrid(bool isDark) {
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: _colorPalette.asMap().entries.map((entry) {
+        final index = entry.key;
+        final color = entry.value;
+        final isSelected = _selectedColorIndex == index;
+        return GestureDetector(
+          onTap: () => setState(() => _selectedColorIndex = index),
+          child: Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(10),
+              border: isSelected
+                  ? Border.all(
+                      color: isDark ? Colors.white : Colors.black, width: 2.5)
+                  : null,
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                          color: color.withValues(alpha: 0.5),
+                          blurRadius: 8,
+                          spreadRadius: 1)
+                    ]
+                  : null,
+            ),
+            child: isSelected
+                ? const Icon(Icons.check_rounded, color: Colors.white, size: 18)
+                : null,
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildAdvancedOptions(ThemeData theme, bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GestureDetector(
+          onTap: () => setState(() => _showAdvanced = !_showAdvanced),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Advanced Options',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                ),
+              ),
+              Icon(
+                _showAdvanced
+                    ? Icons.keyboard_arrow_up_rounded
+                    : Icons.keyboard_arrow_down_rounded,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                size: 20,
+              ),
+            ],
+          ),
+        ),
+        if (_showAdvanced) ...[
+          const SizedBox(height: 16),
+
+          // Category
+          Text('Category',
+              style: theme.textTheme.labelLarge
+                  ?.copyWith(fontWeight: FontWeight.w600)),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<HabitCategory>(
+            value: _selectedCategory,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: isDark ? AppColors.cardDark : AppColors.cardLight,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+            ),
+            items: HabitCategory.values.map((cat) {
+              return DropdownMenuItem(
+                value: cat,
+                child: Text(cat.name[0].toUpperCase() + cat.name.substring(1)),
+              );
+            }).toList(),
+            onChanged: (value) => setState(() => _selectedCategory = value!),
+          ),
+          const SizedBox(height: 16),
+
+          // Priority
+          PrioritySelectorWidget(
+            selectedPriority: _selectedPriority,
+            onPriorityChanged: (p) => setState(() => _selectedPriority = p),
+          ),
+          const SizedBox(height: 16),
+
+          // Frequency
+          Text('Frequency',
+              style: theme.textTheme.labelLarge
+                  ?.copyWith(fontWeight: FontWeight.w600)),
+          const SizedBox(height: 8),
+          InputDecorator(
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: isDark ? AppColors.cardDark : AppColors.cardLight,
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<HabitFrequency>(
+                value: _selectedFrequency,
+                isExpanded: true,
+                items: const [
+                  DropdownMenuItem(
+                    value: HabitFrequency.daily,
+                    child: Text('Every Day'),
+                  ),
+                  DropdownMenuItem(
+                    value: HabitFrequency.weekdays,
+                    child: Text('Weekdays (Mon-Fri)'),
+                  ),
+                  DropdownMenuItem(
+                    value: HabitFrequency.weekends,
+                    child: Text('Weekends (Sat-Sun)'),
+                  ),
+                ],
+                onChanged: (value) =>
+                    setState(() => _selectedFrequency = value!),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Target count
+          Text('Daily target',
+              style: theme.textTheme.labelLarge
+                  ?.copyWith(fontWeight: FontWeight.w600)),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              IconButton(
+                onPressed: _targetCount > 1
+                    ? () => setState(() => _targetCount--)
+                    : null,
+                icon: const Icon(Icons.remove_rounded),
+              ),
+              Text('$_targetCount', style: theme.textTheme.headlineSmall),
+              IconButton(
+                onPressed: () => setState(() => _targetCount++),
+                icon: const Icon(Icons.add_rounded),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                _targetCount == 1 ? 'time per day' : 'times per day',
+                style: theme.textTheme.bodyMedium,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Reminders
+          Text('Reminders',
+              style: theme.textTheme.labelLarge
+                  ?.copyWith(fontWeight: FontWeight.w600)),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Enable Notifications'),
+            value: _reminderEnabled,
+            onChanged: (val) async {
+              if (val) {
+                final granted = await ref
+                    .read(notificationServiceProvider)
+                    .requestPermissions();
+                if (!granted && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Notification permissions denied')),
+                  );
+                  return;
+                }
+                if (_reminderTime == null) {
+                  setState(() =>
+                      _reminderTime = const TimeOfDay(hour: 9, minute: 0));
+                }
+              }
+              setState(() => _reminderEnabled = val);
+            },
+          ),
+          if (_reminderEnabled && _reminderTime != null)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Reminder Time'),
+              trailing: Text(
+                _reminderTime!.format(context),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
+              ),
+              onTap: () async {
+                final time = await showTimePicker(
+                  context: context,
+                  initialTime: _reminderTime!,
+                );
+                if (time != null) {
+                  setState(() => _reminderTime = time);
+                }
+              },
+            ),
+        ],
+      ],
+    );
+  }
+
+  Future<void> _openIconPicker() async {
+    final result = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (_) => IconEmojiPicker(initialValue: _selectedEmoji),
+      ),
+    );
+    if (result != null) {
+      setState(() => _selectedEmoji = result);
+    }
   }
 
   Future<void> _createHabit() async {
@@ -521,15 +670,15 @@ class AddHabitSheetState extends ConsumerState<AddHabitSheet> {
       return;
     }
 
+    final color = _colorPalette[_selectedColorIndex];
+
     await ref.read(habitNotifierProvider.notifier).createHabit(
           name: name,
           emoji: _selectedEmoji,
           category: _selectedCategory,
           frequency: _selectedFrequency,
-          priority: _selectedPriority.value, // Pass priority value
-          colorHex: AppColors.categoryColors[_selectedCategory.index]
-              .toARGB32()
-              .toRadixString(16),
+          priority: _selectedPriority.value,
+          colorHex: color.toARGB32().toRadixString(16),
           targetCount: _targetCount,
           description: _descriptionController.text.trim().isEmpty
               ? null
