@@ -609,11 +609,13 @@ class AddHabitSheetState extends ConsumerState<AddHabitSheet> {
                 final granted = await ref
                     .read(notificationServiceProvider)
                     .requestPermissions();
-                if (!granted && context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Notification permissions denied')),
-                  );
+                if (!granted) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Notification permissions denied')),
+                    );
+                  }
                   return;
                 }
                 if (_reminderTime == null) {
