@@ -246,12 +246,27 @@ class AddHabitSheetState extends ConsumerState<AddHabitSheet> {
             ),
             const SizedBox(height: AppTheme.spacingLg),
 
-            // Title
-            Text(
-              'Create New Habit',
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+            // Header with close button
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const SizedBox(width: 40), // Balance the close button
+                Text(
+                  'Create New Habit',
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    Icons.close_rounded,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ],
             ),
             const SizedBox(height: AppTheme.spacingXl),
 

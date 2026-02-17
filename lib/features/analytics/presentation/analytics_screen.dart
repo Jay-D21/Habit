@@ -10,8 +10,23 @@ import '../../../main.dart'; // database global
 import '../../../core/providers/habit_providers.dart';
 import '../../../core/providers/gamification_providers.dart';
 import '../../../core/services/ad_service.dart';
-import '../../achievements/data/models/achievement.dart';
 import '../../achievements/presentation/widgets/badge_item.dart';
+import '../../achievements/data/models/achievement.dart';
+
+// ──────────── Period Enum ────────────
+
+enum StatsPeriod {
+  week7('Last 7 days', 7),
+  days30('Last 30 days', 30),
+  days90('Last 90 days', 90);
+
+  final String label;
+  final int days;
+  const StatsPeriod(this.label, this.days);
+}
+
+final selectedPeriodProvider =
+    StateProvider<StatsPeriod>((ref) => StatsPeriod.week7);
 
 // ──────────── Providers ────────────
 
@@ -45,27 +60,78 @@ final analyticsStatsProvider = FutureProvider<AnalyticsStats>((ref) async {
   );
 });
 
-final monthlyProgressProvider = FutureProvider<List<MonthData>>((ref) async {
+// Daily completion data for line chart
+final dailyCompletionProvider =
+    FutureProvider.family<List<DayData>, int>((ref, days) async {
   ref.watch(habitsTouchProvider);
   ref.watch(completionsTouchProvider);
   final now = DateTime.now();
-  final List<MonthData> data = [];
-  for (int i = 2; i >= 0; i--) {
-    final month = DateTime(now.year, now.month - i, 1);
-    final endOfMonth = DateTime(month.year, month.month + 1, 0);
-    final actualEnd = month.month == now.month ? now : endOfMonth;
+  final List<DayData> data = [];
+
+  for (int i = days - 1; i >= 0; i--) {
+    final day = DateTime(now.year, now.month, now.day - i);
     final habits = (await database.getAllHabits()).length;
     final completions = (await (database.select(database.habitCompletions)
-              ..where((c) => c.date.isBiggerOrEqual(Variable(month)))
-              ..where((c) => c.date.isSmallerOrEqual(Variable(actualEnd))))
+              ..where((c) => c.date.equals(day)))
             .get())
         .length;
-    final days = actualEnd.day;
-    final rate = habits > 0 && days > 0
-        ? (completions / (habits * days) * 100).clamp(0, 100)
-        : 0.0;
-    data.add(
-        MonthData(month: DateFormat('MMM').format(month), rate: rate.round()));
+    final rate = habits > 0 ? (completions / habits * 100).clamp(0, 100) : 0.0;
+    data.add(DayData(day: day, rate: rate.round()));
+  }
+  return data;
+});
+
+// Period-based bar chart data
+final periodProgressProvider =
+    FutureProvider.family<List<BarData>, int>((ref, days) async {
+  ref.watch(habitsTouchProvider);
+  ref.watch(completionsTouchProvider);
+  final now = DateTime.now();
+
+  // Group days into weeks or months depending on period
+  final List<BarData> data = [];
+  if (days <= 30) {
+    // Group by weeks
+    final weeks = (days / 7).ceil();
+    for (int i = 0; i < weeks; i++) {
+      final weekStart = DateTime(now.year, now.month, now.day - days + (i * 7));
+      final weekEnd =
+          DateTime(now.year, now.month, now.day - days + ((i + 1) * 7))
+              .subtract(const Duration(days: 1));
+      final actualEnd = weekEnd.isAfter(now) ? now : weekEnd;
+
+      final habits = (await database.getAllHabits()).length;
+      final completions = (await (database.select(database.habitCompletions)
+                ..where((c) => c.date.isBiggerOrEqual(Variable(weekStart)))
+                ..where((c) => c.date.isSmallerOrEqual(Variable(actualEnd))))
+              .get())
+          .length;
+      final daysInRange = actualEnd.difference(weekStart).inDays + 1;
+      final rate = habits > 0 && daysInRange > 0
+          ? (completions / (habits * daysInRange) * 100).clamp(0, 100)
+          : 0.0;
+      data.add(BarData(label: 'W${i + 1}', rate: rate.round()));
+    }
+  } else {
+    // Group by months
+    final months = (days / 30).ceil();
+    for (int i = months - 1; i >= 0; i--) {
+      final month = DateTime(now.year, now.month - i, 1);
+      final endOfMonth = DateTime(month.year, month.month + 1, 0);
+      final actualEnd = month.month == now.month ? now : endOfMonth;
+      final habits = (await database.getAllHabits()).length;
+      final completions = (await (database.select(database.habitCompletions)
+                ..where((c) => c.date.isBiggerOrEqual(Variable(month)))
+                ..where((c) => c.date.isSmallerOrEqual(Variable(actualEnd))))
+              .get())
+          .length;
+      final daysInMonth = actualEnd.day;
+      final rate = habits > 0 && daysInMonth > 0
+          ? (completions / (habits * daysInMonth) * 100).clamp(0, 100)
+          : 0.0;
+      data.add(
+          BarData(label: DateFormat('MMM').format(month), rate: rate.round()));
+    }
   }
   return data;
 });
@@ -75,17 +141,24 @@ class AnalyticsStats {
   final int avgCompletion;
   final int longestStreak;
   final String bestMonth;
-  AnalyticsStats(
-      {required this.activeHabits,
-      required this.avgCompletion,
-      required this.longestStreak,
-      required this.bestMonth});
+  AnalyticsStats({
+    required this.activeHabits,
+    required this.avgCompletion,
+    required this.longestStreak,
+    required this.bestMonth,
+  });
 }
 
-class MonthData {
-  final String month;
+class DayData {
+  final DateTime day;
   final int rate;
-  MonthData({required this.month, required this.rate});
+  DayData({required this.day, required this.rate});
+}
+
+class BarData {
+  final String label;
+  final int rate;
+  BarData({required this.label, required this.rate});
 }
 
 // ──────────── Screen ────────────
@@ -108,6 +181,7 @@ class AnalyticsScreen extends StatelessWidget {
             ),
           ),
           centerTitle: false,
+          automaticallyImplyLeading: false,
           bottom: TabBar(
             splashFactory: NoSplash.splashFactory,
             overlayColor: WidgetStateProperty.all(Colors.transparent),
@@ -141,18 +215,66 @@ class _OverviewTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final selectedPeriod = ref.watch(selectedPeriodProvider);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppTheme.spacingLg),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildStatsCards(context, ref).animate().fadeIn(delay: 50.ms),
+          // Period selector
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.cardDark : AppColors.cardLight,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isDark ? AppColors.borderDark : AppColors.borderLight,
+              ),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<StatsPeriod>(
+                value: selectedPeriod,
+                isDense: true,
+                icon: const Icon(Icons.arrow_drop_down_rounded),
+                borderRadius: BorderRadius.circular(12),
+                items: StatsPeriod.values.map((period) {
+                  return DropdownMenuItem(
+                    value: period,
+                    child: Text(
+                      period.label,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  );
+                }).toList(),
+                onChanged: (period) {
+                  if (period != null) {
+                    ref.read(selectedPeriodProvider.notifier).state = period;
+                  }
+                },
+              ),
+            ),
+          ).animate().fadeIn(delay: 50.ms),
+
           const SizedBox(height: 24),
-          _buildMonthlyProgress(context, ref, isDark)
+
+          _buildStatsCards(context, ref).animate().fadeIn(delay: 100.ms),
+          const SizedBox(height: 24),
+
+          _buildLineChart(context, ref, isDark, selectedPeriod)
               .animate()
-              .fadeIn(delay: 100.ms),
+              .fadeIn(delay: 150.ms),
           const SizedBox(height: 24),
+
+          _buildBarChart(context, ref, isDark, selectedPeriod)
+              .animate()
+              .fadeIn(delay: 200.ms),
+          const SizedBox(height: 24),
+
           const BannerAdWidget(),
           const SizedBox(height: 80),
         ],
@@ -197,10 +319,10 @@ class _OverviewTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildMonthlyProgress(
-      BuildContext context, WidgetRef ref, bool isDark) {
+  Widget _buildLineChart(
+      BuildContext context, WidgetRef ref, bool isDark, StatsPeriod period) {
     final theme = Theme.of(context);
-    final monthlyAsync = ref.watch(monthlyProgressProvider);
+    final dailyAsync = ref.watch(dailyCompletionProvider(period.days));
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -213,13 +335,124 @@ class _OverviewTab extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Monthly Trend',
+          Text('Daily Completion Trend',
               style: theme.textTheme.titleMedium
                   ?.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
           SizedBox(
             height: 150,
-            child: monthlyAsync.when(
+            child: dailyAsync.when(
+              data: (data) => LineChart(
+                LineChartData(
+                  minY: 0,
+                  maxY: 100,
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    horizontalInterval: 50,
+                    getDrawingHorizontalLine: (value) => FlLine(
+                      color:
+                          theme.colorScheme.onSurface.withValues(alpha: 0.05),
+                      strokeWidth: 1,
+                    ),
+                  ),
+                  titlesData: FlTitlesData(
+                    leftTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
+                    topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        interval: period.days <= 7
+                            ? 1
+                            : (period.days / 7).ceil().toDouble(),
+                        getTitlesWidget: (value, _) {
+                          if (value.toInt() >= data.length) {
+                            return const SizedBox();
+                          }
+                          final day = data[value.toInt()].day;
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Text(
+                              period.days <= 7
+                                  ? DateFormat('E').format(day).substring(0, 2)
+                                  : '${day.day}',
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                fontSize: 9,
+                                color: theme.colorScheme.onSurface
+                                    .withValues(alpha: 0.4),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: data
+                          .asMap()
+                          .entries
+                          .map((e) =>
+                              FlSpot(e.key.toDouble(), e.value.rate.toDouble()))
+                          .toList(),
+                      isCurved: true,
+                      color: AppColors.primary,
+                      barWidth: 3,
+                      isStrokeCapRound: true,
+                      dotData: FlDotData(
+                        show: true,
+                        getDotPainter: (spot, percent, bar, index) =>
+                            FlDotCirclePainter(
+                          radius: 3,
+                          color: AppColors.primary,
+                          strokeWidth: 0,
+                        ),
+                      ),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (_, __) => const SizedBox.shrink(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBarChart(
+      BuildContext context, WidgetRef ref, bool isDark, StatsPeriod period) {
+    final theme = Theme.of(context);
+    final barAsync = ref.watch(periodProgressProvider(period.days));
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : AppColors.cardLight,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+            color: isDark ? AppColors.borderDark : AppColors.borderLight),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Period Overview',
+              style: theme.textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 150,
+            child: barAsync.when(
               data: (data) => BarChart(
                 BarChartData(
                   alignment: BarChartAlignment.spaceAround,
@@ -232,7 +465,7 @@ class _OverviewTab extends ConsumerWidget {
                         getTitlesWidget: (val, _) => Padding(
                           padding: const EdgeInsets.only(top: 8),
                           child: Text(
-                            data[val.toInt()].month,
+                            data[val.toInt()].label,
                             style: theme.textTheme.labelSmall,
                           ),
                         ),
@@ -326,15 +559,43 @@ class _BadgesTab extends ConsumerWidget {
     return achievementsAsync.when(
       data: (achievements) {
         if (achievements.isEmpty) {
-          return const Center(child: Text('No badges yet.'));
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('🏆', style: TextStyle(fontSize: 48)),
+                const SizedBox(height: 16),
+                Text(
+                  'No badges yet',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.5),
+                      ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Complete habits to earn badges!',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.4),
+                      ),
+                ),
+              ],
+            ),
+          );
         }
+
         return GridView.builder(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppTheme.spacingLg),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            childAspectRatio: 0.7,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
+            crossAxisCount: 2,
+            crossAxisSpacing: AppTheme.spacingMd,
+            mainAxisSpacing: AppTheme.spacingMd,
+            childAspectRatio: 0.85,
           ),
           itemCount: achievements.length,
           itemBuilder: (context, index) {
@@ -352,9 +613,7 @@ class _BadgesTab extends ConsumerWidget {
               isUnlocked: entity.isUnlocked,
               unlockedAt: entity.unlockedAt,
             );
-            return BadgeItem(achievement: model)
-                .animate()
-                .scale(delay: (50 * index).ms);
+            return BadgeItem(achievement: model);
           },
         );
       },
