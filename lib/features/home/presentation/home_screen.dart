@@ -113,23 +113,30 @@ class HomeScreen extends ConsumerWidget {
                       final level = progress?.level ?? 1;
                       return Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [Color(0xFF6C5CE7), Color(0xFFA29BFE)],
                           ),
                           borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Text('⚡', style: TextStyle(fontSize: 12)),
-                            const SizedBox(width: 4),
+                            const Text('⚡', style: TextStyle(fontSize: 14)),
+                            const SizedBox(width: 6),
                             Text(
                               'Lv$level · ${xp}XP',
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 11,
+                                fontSize: 12,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -140,7 +147,7 @@ class HomeScreen extends ConsumerWidget {
                     loading: () => const SizedBox.shrink(),
                     error: (_, __) => const SizedBox.shrink(),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 16),
 
                   // App name
                   Text(
@@ -246,32 +253,67 @@ class HomeScreen extends ConsumerWidget {
             // ─── Motivational Quote ───
             Padding(
               padding: const EdgeInsets.symmetric(
-                  horizontal: AppTheme.spacingLg, vertical: 4),
+                  horizontal: AppTheme.spacingLg, vertical: 8),
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? AppColors.primary.withValues(alpha: 0.08)
-                      : AppColors.primary.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                  ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 20,
                 ),
-                child: Text(
-                  _todayQuote(),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontStyle: FontStyle.italic,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                    height: 1.4,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isDark
+                        ? [
+                            AppColors.primary.withValues(alpha: 0.12),
+                            AppColors.primary.withValues(alpha: 0.06),
+                          ]
+                        : [
+                            AppColors.primary.withValues(alpha: 0.08),
+                            AppColors.primary.withValues(alpha: 0.03),
+                          ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  textAlign: TextAlign.center,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.15),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.05),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.format_quote_rounded,
+                      size: 24,
+                      color: AppColors.primary.withValues(alpha: 0.4),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _todayQuote(),
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        fontStyle: FontStyle.italic,
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.85),
+                        height: 1.6,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 0.2,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
               ),
-            ).animate().fadeIn(delay: 100.ms),
+            ).animate().fadeIn(delay: 100.ms).scale(delay: 100.ms),
 
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
 
             // ─── Day headers ───
             Padding(
