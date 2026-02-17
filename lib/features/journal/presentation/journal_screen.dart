@@ -45,11 +45,11 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      ElevatedButton.icon(
-                        onPressed: () => context.push('/journal/new'),
+                      FilledButton.icon(
+                        onPressed: () => _showNewEntryOptions(context),
                         icon: const Icon(Icons.add_rounded, size: 20),
                         label: const Text('New Entry'),
-                        style: ElevatedButton.styleFrom(
+                        style: FilledButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppTheme.spacingMd,
                             vertical: AppTheme.spacingSm,
@@ -150,6 +150,8 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
 
             const SizedBox(height: AppTheme.spacingLg),
 
+            const SizedBox(height: AppTheme.spacingLg),
+
             // Content based on view
             Expanded(
               child: _buildContent(),
@@ -161,6 +163,78 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
               child: BannerAdWidget(),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _showNewEntryOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'New Journal Entry',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 24),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.edit_note_rounded,
+                      color: AppColors.primary),
+                ),
+                title: const Text('Blank Entry'),
+                subtitle: const Text('Start with a clean slate'),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.push('/journal/new');
+                },
+              ),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.secondary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.dashboard_customize_rounded,
+                      color: AppColors.secondary),
+                ),
+                title: const Text('Use Template'),
+                subtitle: const Text('Choose from guided prompts'),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.push('/journal/templates');
+                },
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
         ),
       ),
     );

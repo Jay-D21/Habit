@@ -6,6 +6,7 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../core/providers/journal_notifier.dart';
 import '../data/models/journal_entry.dart';
+import '../data/models/journal_template.dart';
 import 'widgets/audio_player_widget.dart';
 import 'widgets/voice_recorder_sheet.dart';
 
@@ -14,8 +15,9 @@ import '../../../main.dart'; // Import global database
 /// Journal entry creation/editing screen
 class JournalEntryScreen extends ConsumerStatefulWidget {
   final String? entryId;
+  final JournalTemplate? template;
 
-  const JournalEntryScreen({super.key, this.entryId});
+  const JournalEntryScreen({super.key, this.entryId, this.template});
 
   @override
   ConsumerState<JournalEntryScreen> createState() => _JournalEntryScreenState();
@@ -35,7 +37,25 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
     super.initState();
     if (_isEditing) {
       _loadEntry();
+    } else if (widget.template != null) {
+      _applyTemplate(widget.template!);
     }
+  }
+
+  void _applyTemplate(JournalTemplate template) {
+    _titleController.text = template.titleTemplate.replaceAll('{date}', '');
+
+    final buffer = StringBuffer();
+    // buffer.writeln(template.description);
+    // buffer.writeln();
+
+    for (var prompt in template.prompts) {
+      buffer.writeln('**$prompt**');
+      buffer.writeln(''); // Space for answer
+      buffer.writeln('');
+    }
+
+    _contentController.text = buffer.toString();
   }
 
   Future<void> _loadEntry() async {

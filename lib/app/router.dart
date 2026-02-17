@@ -5,6 +5,8 @@ import '../features/home/presentation/home_screen.dart';
 import '../features/habits/presentation/habit_detail_screen.dart';
 import '../features/journal/presentation/journal_screen.dart';
 import '../features/journal/presentation/journal_entry_screen.dart';
+import '../features/journal/presentation/template_picker_screen.dart';
+import '../features/journal/data/models/journal_template.dart';
 import '../features/analytics/presentation/analytics_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
 import '../features/onboarding/presentation/onboarding_screen.dart';
@@ -126,7 +128,15 @@ class AppRouter {
       GoRoute(
         path: '/journal/new',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const JournalEntryScreen(),
+        builder: (context, state) {
+          final template = state.extra as JournalTemplate?;
+          return JournalEntryScreen(template: template);
+        },
+      ),
+      GoRoute(
+        path: '/journal/templates',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const TemplatePickerScreen(),
       ),
       GoRoute(
         path: '/journal/:entryId',
