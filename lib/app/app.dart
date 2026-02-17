@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'router.dart';
 import 'theme/app_theme.dart';
 import '../core/services/ad_service.dart';
+import '../core/providers/theme_provider.dart';
 
 /// Main App Widget
 class HabitTrackerApp extends ConsumerStatefulWidget {
@@ -26,6 +27,8 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp> {
 
   @override
   Widget build(BuildContext context) {
+    final themeMode = ref.watch(themeModeProvider);
+
     // Set system UI overlay style
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
@@ -41,7 +44,7 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp> {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: themeMode,
       routerConfig: AppRouter.router,
     );
   }

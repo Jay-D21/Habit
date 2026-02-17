@@ -11,6 +11,7 @@ import '../../../main.dart';
 import '../../../core/services/drive_backup_service.dart';
 import '../../../core/services/aws_auth_service.dart';
 import '../../../core/services/feedback_service.dart';
+import '../../../core/providers/theme_provider.dart';
 
 /// Settings screen with Google Sign-In and backup
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -25,7 +26,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _weeklyReports = false;
   bool _soundEffects = true;
   bool _hapticFeedback = true;
-  String _selectedTheme = 'System';
+
+  String get _selectedTheme {
+    final themeMode = ref.watch(themeModeProvider);
+    switch (themeMode) {
+      case ThemeMode.light:
+        return 'Light';
+      case ThemeMode.dark:
+        return 'Dark';
+      default:
+        return 'System';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -380,7 +392,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ? const Icon(Icons.check_rounded, color: AppColors.primary)
                 : null,
             onTap: () {
-              setState(() => _selectedTheme = 'System');
+              ref.read(themeModeProvider.notifier).setTheme(ThemeMode.system);
               Navigator.pop(context);
             },
           ),
@@ -391,7 +403,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ? const Icon(Icons.check_rounded, color: AppColors.primary)
                 : null,
             onTap: () {
-              setState(() => _selectedTheme = 'Light');
+              ref.read(themeModeProvider.notifier).setTheme(ThemeMode.light);
               Navigator.pop(context);
             },
           ),
@@ -402,7 +414,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ? const Icon(Icons.check_rounded, color: AppColors.primary)
                 : null,
             onTap: () {
-              setState(() => _selectedTheme = 'Dark');
+              ref.read(themeModeProvider.notifier).setTheme(ThemeMode.dark);
               Navigator.pop(context);
             },
           ),

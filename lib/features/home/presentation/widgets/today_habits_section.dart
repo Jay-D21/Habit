@@ -362,13 +362,13 @@ class AddHabitSheetState extends ConsumerState<AddHabitSheet> {
           alignment: Alignment.center,
           children: [
             // Faded icon grid background
-            Opacity(
+            const Opacity(
               opacity: 0.15,
               child: Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 alignment: WrapAlignment.center,
-                children: const [
+                children: [
                   Icon(Icons.camera_alt_outlined, size: 20),
                   Icon(Icons.podcasts_outlined, size: 20),
                   Icon(Icons.directions_run_outlined, size: 20),
@@ -502,7 +502,7 @@ class AddHabitSheetState extends ConsumerState<AddHabitSheet> {
                   ?.copyWith(fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
           DropdownButtonFormField<HabitCategory>(
-            value: _selectedCategory,
+            initialValue: _selectedCategory,
             decoration: InputDecoration(
               filled: true,
               fillColor: isDark ? AppColors.cardDark : AppColors.cardLight,
