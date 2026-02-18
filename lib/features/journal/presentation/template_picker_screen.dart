@@ -49,7 +49,7 @@ class _TemplatePickerScreenState extends ConsumerState<TemplatePickerScreen> {
 
   void _onTemplateSelected(JournalTemplate template) {
     context.push(
-      '/journal/new',
+      '/journal/template-details',
       extra: template,
     );
   }

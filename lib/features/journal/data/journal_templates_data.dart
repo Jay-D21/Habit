@@ -8,6 +8,8 @@ List<JournalTemplate> get journalTemplates => [
         id: 'daily_reflection',
         name: 'Daily Reflection',
         description: 'Review your day, what went well, and what to improve.',
+        longDescription:
+            'End your day with clarity and peace. This guided reflection helps you process daily events, celebrate small wins, and learn from challenges, setting you up for a better tomorrow.',
         category: JournalTemplateCategory.daily,
         icon: Icons.wb_sunny_rounded,
         color: AppColors.primary,
@@ -19,11 +21,50 @@ List<JournalTemplate> get journalTemplates => [
           'What is one thing you could have done better?',
           'How are you feeling right now?',
         ],
+        keyResults: [
+          JournalTemplateKeyResult(
+              icon: Icons.visibility_rounded,
+              label: 'Clarity',
+              description: 'Gain perspective on events'),
+          JournalTemplateKeyResult(
+              icon: Icons.nightlight_round,
+              label: 'Results',
+              description: 'Sleep better with a clear mind'),
+          JournalTemplateKeyResult(
+              icon: Icons.trending_up_rounded,
+              label: 'Growth',
+              description: 'Learn from daily experiences'),
+          JournalTemplateKeyResult(
+              icon: Icons.mood_rounded,
+              label: 'Mood',
+              description: 'Track emotional patterns'),
+        ],
+        expectations: [
+          'Reduced stress and anxiety',
+          'Better memory of daily events',
+          'Increased self-awareness',
+        ],
+        timeline: [
+          JournalTemplateTimelineItem(
+              dayRange: 'Day 1-7',
+              title: 'Building the Habit',
+              description: 'Start small. Even one sentence is enough.'),
+          JournalTemplateTimelineItem(
+              dayRange: 'Day 8-21',
+              title: 'Deepening Insight',
+              description: 'You start noticing patterns in your behavior.'),
+          JournalTemplateTimelineItem(
+              dayRange: 'Day 22+',
+              title: 'Mastery',
+              description: 'Reflection becomes a natural part of your day.'),
+        ],
       ),
       const JournalTemplate(
         id: 'morning_intention',
         name: 'Morning Intention',
         description: 'Set a positive tone and clear goals for the day ahead.',
+        longDescription:
+            'Start your day with purpose. Define your main focus and how you want to feel, rather than just reacting to what happens.',
         category: JournalTemplateCategory.daily,
         icon: Icons.coffee_rounded,
         color: Color(0xFFFF9500), // Orange
@@ -34,6 +75,16 @@ List<JournalTemplate> get journalTemplates => [
           'How do you want to feel at the end of the day?',
           'What is one small thing you can do for yourself today?',
           'I am grateful for...',
+        ],
+        keyResults: [
+          JournalTemplateKeyResult(
+              icon: Icons.track_changes_rounded,
+              label: 'Focus',
+              description: 'Prioritize what matters'),
+          JournalTemplateKeyResult(
+              icon: Icons.energy_savings_leaf_rounded,
+              label: 'Energy',
+              description: 'Start with motivation'),
         ],
       ),
       const JournalTemplate(
@@ -72,6 +123,8 @@ List<JournalTemplate> get journalTemplates => [
         id: 'manifestation_369',
         name: '3-6-9 Manifestation',
         description: 'A powerful technique to align with your desires.',
+        longDescription:
+            'The 3-6-9 method is a simple manifestation technique. Write your desire 3 times in the morning, 6 times in the afternoon, and 9 times at night.',
         category: JournalTemplateCategory.manifestation,
         icon: Icons.auto_awesome_rounded,
         color: Color(0xFFAF52DE), // Purple
@@ -81,6 +134,16 @@ List<JournalTemplate> get journalTemplates => [
           'Morning (3 times): Write your desire clearly.',
           'Afternoon (6 times): Write your intention.',
           'Evening (9 times): Write the outcome as if it has already happened.',
+        ],
+        keyResults: [
+          JournalTemplateKeyResult(
+              icon: Icons.star_rounded,
+              label: 'Clarity',
+              description: 'Define exactly what you want'),
+          JournalTemplateKeyResult(
+              icon: Icons.psychology_rounded,
+              label: 'Focus',
+              description: 'Keep your goal top of mind'),
         ],
       ),
       const JournalTemplate(

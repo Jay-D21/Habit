@@ -7,6 +7,7 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../../core/providers/journal_providers.dart';
 import '../../../core/services/ad_service.dart';
+import '../data/journal_templates_data.dart';
 
 /// Journal screen with entries list
 class JournalScreen extends ConsumerStatefulWidget {
@@ -108,6 +109,89 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
                 },
               ),
             ).animate().fadeIn(duration: 300.ms, delay: 100.ms),
+
+            const SizedBox(height: AppTheme.spacingLg),
+
+            // Suggested Templates
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
+              child: Text(
+                'START A GUIDED JOURNAL',
+                style: theme.textTheme.labelLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
+              ),
+            ),
+            const SizedBox(height: AppTheme.spacingSm),
+            SizedBox(
+              height: 140,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
+                itemCount: 3, // Show first 3 templates
+                itemBuilder: (context, index) {
+                  final template = journalTemplates[index];
+                  return Container(
+                    width: 130,
+                    margin: const EdgeInsets.only(right: AppTheme.spacingMd),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          context.push(
+                            '/journal/template-details',
+                            extra: template,
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                        child: Container(
+                          padding: const EdgeInsets.all(AppTheme.spacingMd),
+                          decoration: BoxDecoration(
+                            color: template.color.withValues(alpha: 0.1),
+                            borderRadius:
+                                BorderRadius.circular(AppTheme.radiusMd),
+                            border: Border.all(
+                                color: template.color.withValues(alpha: 0.2)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(template.icon,
+                                  color: template.color, size: 32),
+                              const Spacer(),
+                              Text(
+                                template.name,
+                                style: theme.textTheme.labelMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: template.color,
+                                  height: 1.2,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                template.estimatedDuration,
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: theme.colorScheme.onSurface
+                                      .withValues(alpha: 0.5),
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
 
             const SizedBox(height: AppTheme.spacingLg),
 
