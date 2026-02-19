@@ -10,6 +10,7 @@ import 'package:habit_tracker/core/database/tables/journal_entries_table.dart';
 import 'package:habit_tracker/core/database/tables/achievements_table.dart';
 import 'package:habit_tracker/core/database/tables/user_progress_table.dart';
 import 'package:habit_tracker/core/database/tables/focus_settings_table.dart';
+import 'package:habit_tracker/core/database/tables/diaries_table.dart';
 
 part 'database.g.dart';
 
@@ -19,13 +20,14 @@ part 'database.g.dart';
   JournalEntries,
   Achievements,
   UserProgress,
-  FocusSettings, // Add table
+  FocusSettings,
+  Diaries,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 4; // Increment version
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -36,14 +38,39 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 3) {
             await m.createTable(userProgress);
-          }
-          if (from < 4) {
-            // Add FocusSettings table
-            await m.createTable(focusSettings);
+
             // Insert default settings
             await into(focusSettings).insert(
               const FocusSettingsCompanion(), // Uses defaults
             );
+          }
+          if (from < 5) {
+            // 1. Create Diaries table
+            await m.createTable(diaries);
+
+            // 2. Add columns to JournalEntries
+            await m.addColumn(journalEntries, journalEntries.diaryId);
+            await m.addColumn(journalEntries, journalEntries.iconCodePoint);
+            await m.addColumn(journalEntries, journalEntries.iconColor);
+
+            // 3. Create a default diary if none exists (manually or via companion)
+            // We use a raw query or companion to insert the first diary
+            final diaryId = await into(diaries).insert(
+              DiariesCompanion.insert(
+                name: 'My Journal',
+                description: const Value('General entries'),
+                color: 0xFF2196F3, // Blue
+                iconCodePoint:
+                    0xe0d0, // book icon (approx) - using a safe default if unknown, or just 0
+                createdAt: DateTime.now(),
+              ),
+            );
+
+            // 4. Migrate existing entries to this diary
+            // We can't use update(journalEntries) easily in migration sometimes if table struct changed
+            // But Drift supports custom updates.
+            await (update(journalEntries)..where((tbl) => tbl.diaryId.isNull()))
+                .write(JournalEntriesCompanion(diaryId: Value(diaryId)));
           }
         },
       );
@@ -262,6 +289,37 @@ class AppDatabase extends _$AppDatabase {
   /// Update user progress
   Future<bool> updateUserProgress(UserProgressEntity progress) {
     return update(userProgress).replace(progress);
+  }
+  // ============ DIARY QUERIES ============
+
+  /// Get all diaries
+  Future<List<DiaryEntity>> getAllDiaries() {
+    return select(diaries).get();
+  }
+
+  /// Get diary by ID
+  Future<DiaryEntity?> getDiaryById(int id) {
+    return (select(diaries)..where((d) => d.id.equals(id))).getSingleOrNull();
+  }
+
+  /// Insert a diary
+  Future<int> insertDiary(DiariesCompanion diary) {
+    return into(diaries).insert(diary);
+  }
+
+  /// Update a diary
+  Future<bool> updateDiary(DiaryEntity diary) {
+    return update(diaries).replace(diary);
+  }
+
+  /// Delete a diary
+  Future<int> deleteDiary(int id) {
+    return (delete(diaries)..where((d) => d.id.equals(id))).go();
+  }
+
+  /// Watch all diaries
+  Stream<List<DiaryEntity>> watchAllDiaries() {
+    return select(diaries).watch();
   }
 }
 

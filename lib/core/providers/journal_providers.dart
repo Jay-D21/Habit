@@ -1,6 +1,60 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:drift/drift.dart' as drift;
 import '../../main.dart';
+import '../../features/journal/data/models/diary.dart';
 import '../../features/journal/data/models/journal_entry.dart';
+
+// ================= DIARY PROVIDERS =================
+
+/// Provider for all diaries
+final diariesProvider = StreamProvider<List<Diary>>((ref) {
+  return database.select(database.diaries).watch().map((rows) {
+    return rows
+        .map((row) => Diary(
+              id: row.id,
+              name: row.name,
+              description: row.description,
+              color: row.color,
+              iconCodePoint: row.iconCodePoint,
+              createdAt: row.createdAt,
+            ))
+        .toList();
+  });
+});
+
+/// Provider for entries of a specific diary
+final entriesForDiaryProvider =
+    StreamProvider.family<List<JournalEntryModel>, int>((ref, diaryId) {
+  return (database.select(database.journalEntries)
+        ..where((tbl) => tbl.diaryId.equals(diaryId))
+        ..orderBy([
+          (t) => drift.OrderingTerm(
+              expression: t.date, mode: drift.OrderingMode.desc)
+        ]))
+      .watch()
+      .map((entries) {
+    return entries
+        .map((e) => JournalEntryModel(
+              id: e.id,
+              title: e.title,
+              content: e.content,
+              date: e.date,
+              mood: Mood.values[e.mood],
+              diaryId: e.diaryId!, // Should be non-null after migration
+              iconCodePoint: e.iconCodePoint,
+              iconColor: e.iconColor,
+              tags: e.tags,
+              voiceNotePath: e.voiceNotePath,
+              hasVoiceNote: e.hasVoiceNote,
+              wordCount: e.wordCount,
+              createdAt: e.createdAt,
+              updatedAt: e.updatedAt,
+            ))
+        .toList();
+  });
+});
+
+// ================= GLOBAL ENTRIES PROVIDER (LEGACY/STATS) =================
 
 /// Provider for all journal entries (sorted by date, newest first)
 final journalEntriesProvider = StreamProvider<List<JournalEntryModel>>((ref) {
@@ -12,6 +66,9 @@ final journalEntriesProvider = StreamProvider<List<JournalEntryModel>>((ref) {
               content: e.content,
               date: e.date,
               mood: Mood.values[e.mood],
+              diaryId: e.diaryId ?? 1, // Fallback if null (migration)
+              iconCodePoint: e.iconCodePoint,
+              iconColor: e.iconColor,
               tags: e.tags,
               voiceNotePath: e.voiceNotePath,
               hasVoiceNote: e.hasVoiceNote,
@@ -39,6 +96,9 @@ final journalEntryProvider =
     voiceNotePath: entry.voiceNotePath,
     hasVoiceNote: entry.hasVoiceNote,
     wordCount: entry.wordCount,
+    diaryId: entry.diaryId ?? 1,
+    iconCodePoint: entry.iconCodePoint,
+    iconColor: entry.iconColor,
     createdAt: entry.createdAt,
     updatedAt: entry.updatedAt,
   );

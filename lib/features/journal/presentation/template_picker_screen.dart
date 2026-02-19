@@ -6,6 +6,8 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_theme.dart';
 import '../data/models/journal_template.dart';
 import '../data/journal_templates_data.dart';
+import '../../../core/providers/journal_notifier.dart';
+import '../data/models/diary.dart';
 
 class TemplatePickerScreen extends ConsumerStatefulWidget {
   const TemplatePickerScreen({super.key});
@@ -48,10 +50,92 @@ class _TemplatePickerScreenState extends ConsumerState<TemplatePickerScreen> {
   }
 
   void _onTemplateSelected(JournalTemplate template) {
-    context.push(
-      '/journal/template-details',
-      extra: template,
+    _showCreateDiaryDialog(template);
+  }
+
+  Future<void> _showCreateDiaryDialog(JournalTemplate template) async {
+    final nameController = TextEditingController(text: template.name);
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Create New Diary'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Create a new diary based on "${template.name}"?',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(
+                labelText: 'Diary Name',
+                border: OutlineInputBorder(),
+              ),
+              textCapitalization: TextCapitalization.sentences,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Create'),
+          ),
+        ],
+      ),
     );
+
+    if (result == true && mounted) {
+      final name = nameController.text.trim();
+      if (name.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter a diary name')),
+        );
+        return;
+      }
+
+      try {
+        final diaryId =
+            await ref.read(journalNotifierProvider.notifier).createDiary(
+                  name: name,
+                  description: template.description,
+                  color: template.color.toARGB32(),
+                  iconCodePoint: template.icon.codePoint,
+                );
+
+        if (mounted) {
+          // Construct Diary object for immediate display
+          final diary = Diary(
+            id: diaryId,
+            name: name,
+            description: template.description,
+            color: template.color.toARGB32(),
+            iconCodePoint: template.icon.codePoint,
+            createdAt: DateTime.now(),
+          );
+
+          context.push(
+            '/journal/diary/$diaryId',
+            extra: diary,
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error creating diary: $e')),
+          );
+        }
+      }
+    }
+
+    nameController.dispose();
   }
 
   @override
@@ -73,7 +157,7 @@ class _TemplatePickerScreenState extends ConsumerState<TemplatePickerScreen> {
       backgroundColor:
           isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
       appBar: AppBar(
-        title: const Text('New Journal Entry'),
+        title: const Text('Choose Template'),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,

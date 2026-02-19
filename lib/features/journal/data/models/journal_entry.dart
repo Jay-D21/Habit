@@ -18,6 +18,9 @@ class JournalEntryModel {
   final String? voiceNotePath;
   final bool hasVoiceNote;
   final int wordCount;
+  final int diaryId;
+  final int? iconCodePoint;
+  final int? iconColor;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -31,6 +34,9 @@ class JournalEntryModel {
     this.voiceNotePath,
     this.hasVoiceNote = false,
     this.wordCount = 0,
+    required this.diaryId,
+    this.iconCodePoint,
+    this.iconColor,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -68,6 +74,9 @@ class JournalEntryModel {
     String? voiceNotePath,
     bool? hasVoiceNote,
     int? wordCount,
+    int? diaryId,
+    int? iconCodePoint,
+    int? iconColor,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -81,6 +90,9 @@ class JournalEntryModel {
       voiceNotePath: voiceNotePath ?? this.voiceNotePath,
       hasVoiceNote: hasVoiceNote ?? this.hasVoiceNote,
       wordCount: wordCount ?? this.wordCount,
+      diaryId: diaryId ?? this.diaryId,
+      iconCodePoint: iconCodePoint ?? this.iconCodePoint,
+      iconColor: iconColor ?? this.iconColor,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

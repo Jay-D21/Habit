@@ -6,8 +6,9 @@ import '../features/habits/presentation/habit_detail_screen.dart';
 import '../features/journal/presentation/journal_screen.dart';
 import '../features/journal/presentation/journal_entry_screen.dart';
 import '../features/journal/presentation/template_picker_screen.dart';
-import '../features/journal/presentation/journal_template_detail_screen.dart';
-import '../features/journal/data/models/journal_template.dart';
+import '../features/journal/presentation/diary_detail_screen.dart';
+import '../features/journal/data/models/journal_entry.dart';
+import '../features/journal/data/models/diary.dart';
 import '../features/analytics/presentation/analytics_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
 import '../features/onboarding/presentation/onboarding_screen.dart';
@@ -79,6 +80,48 @@ class AppRouter {
             pageBuilder: (context, state) => const NoTransitionPage(
               child: JournalScreen(),
             ),
+            routes: [
+              GoRoute(
+                path: 'new',
+                parentNavigatorKey: _rootNavigatorKey,
+                builder: (context, state) {
+                  final extra = state.extra as Map<String, dynamic>?;
+                  return JournalEntryScreen(
+                    diaryId: extra?['diaryId'] as int?,
+                    date: extra?['date'] as DateTime?,
+                  );
+                },
+              ),
+              GoRoute(
+                path: 'entry/:id',
+                parentNavigatorKey: _rootNavigatorKey,
+                builder: (context, state) {
+                  final entry = state.extra as JournalEntryModel?;
+                  final id = int.tryParse(state.pathParameters['id'] ?? '');
+                  return JournalEntryScreen(
+                    entry: entry,
+                    entryId: id,
+                  );
+                },
+              ),
+              GoRoute(
+                path: 'diary/:id',
+                parentNavigatorKey: _rootNavigatorKey,
+                builder: (context, state) {
+                  final id = int.parse(state.pathParameters['id']!);
+                  final diary = state.extra as Diary?;
+                  return DiaryDetailScreen(
+                    diaryId: id,
+                    diary: diary,
+                  );
+                },
+              ),
+              GoRoute(
+                path: 'templates',
+                parentNavigatorKey: _rootNavigatorKey,
+                builder: (context, state) => const TemplatePickerScreen(),
+              ),
+            ],
           ),
 
           // Analytics
@@ -122,36 +165,6 @@ class AppRouter {
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => HabitDetailScreen(
           habitId: state.pathParameters['habitId']!,
-        ),
-      ),
-
-      // Journal Entry (Full Screen)
-      GoRoute(
-        path: '/journal/new',
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) {
-          final template = state.extra as JournalTemplate?;
-          return JournalEntryScreen(template: template);
-        },
-      ),
-      GoRoute(
-        path: '/journal/templates',
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const TemplatePickerScreen(),
-      ),
-      GoRoute(
-        path: '/journal/template-details',
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) {
-          final template = state.extra as JournalTemplate;
-          return JournalTemplateDetailScreen(template: template);
-        },
-      ),
-      GoRoute(
-        path: '/journal/:entryId',
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => JournalEntryScreen(
-          entryId: state.pathParameters['entryId'],
         ),
       ),
     ],
