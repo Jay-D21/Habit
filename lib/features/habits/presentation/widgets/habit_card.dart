@@ -53,7 +53,7 @@ class _HabitCardState extends ConsumerState<HabitCard> {
 
     return GestureDetector(
       onTap: () {
-        context.go('/habits/${widget.habit.id!}');
+        context.push('/habits/${widget.habit.id!}');
       },
       onLongPressStart: (_) {
         setState(() => _isPressed = true);
