@@ -34,6 +34,8 @@ class HabitModel {
   final int priority;
   final int sortOrder;
   final bool isArchived;
+  final bool isTimed;
+  final int? timerDuration;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -52,6 +54,8 @@ class HabitModel {
     this.priority = 3, // Default medium
     this.sortOrder = 0,
     this.isArchived = false,
+    this.isTimed = false,
+    this.timerDuration,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -78,6 +82,8 @@ class HabitModel {
     int? priority,
     int? sortOrder,
     bool? isArchived,
+    bool? isTimed,
+    int? timerDuration,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -96,6 +102,8 @@ class HabitModel {
       priority: priority ?? this.priority,
       sortOrder: sortOrder ?? this.sortOrder,
       isArchived: isArchived ?? this.isArchived,
+      isTimed: isTimed ?? this.isTimed,
+      timerDuration: timerDuration ?? this.timerDuration,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

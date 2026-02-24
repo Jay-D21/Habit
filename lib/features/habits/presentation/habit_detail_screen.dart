@@ -7,6 +7,7 @@ import '../../../app/theme/app_theme.dart';
 import '../../../core/providers/habit_providers.dart';
 import '../../../core/providers/habit_notifier.dart';
 import '../../../core/providers/notification_providers.dart';
+import '../../timer/providers/habit_timer_providers.dart';
 import '../data/models/habit.dart';
 
 /// Habit detail screen
@@ -148,6 +149,34 @@ class HabitDetailScreen extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: AppTheme.spacingXl),
+
+                // Timer Button (if timed)
+                if (habit.isTimed) ...[
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: () {
+                        // Start timer logic
+                        final duration = habit.timerDuration ?? 15;
+                        ref.read(habitTimerProvider.notifier).startTimer(
+                              habit.id!,
+                              duration,
+                            );
+                        context.push('/timer/${habit.id}');
+                      },
+                      icon: const Icon(Icons.timer_outlined),
+                      label: Text('Start ${habit.timerDuration ?? 15}m Timer'),
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: AppTheme.spacingMd),
+                        backgroundColor: Color(
+                            int.tryParse(habit.colorHex, radix: 16) ??
+                                0xFF2196F3),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppTheme.spacingMd),
+                ],
 
                 // Complete button
                 SizedBox(
@@ -301,6 +330,8 @@ class _EditHabitSheetState extends ConsumerState<_EditHabitSheet> {
   late int _targetCount;
   late bool _reminderEnabled;
   TimeOfDay? _reminderTime;
+  late bool _isTimed;
+  late int _timerDuration;
 
   final _emojis = ['⭐', '🧘', '📚', '💪', '💧', '🏃', '✍️', '🎯', '💤', '🥗'];
 
@@ -316,6 +347,8 @@ class _EditHabitSheetState extends ConsumerState<_EditHabitSheet> {
       _reminderTime =
           TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
     }
+    _isTimed = widget.habit.isTimed;
+    _timerDuration = widget.habit.timerDuration ?? 15;
   }
 
   @override
@@ -506,6 +539,52 @@ class _EditHabitSheetState extends ConsumerState<_EditHabitSheet> {
                   }
                 },
               ),
+            const SizedBox(height: AppTheme.spacingXl),
+
+            // Timer Mode
+            Text(
+              'Timer Mode',
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SwitchListTile(
+              title: const Text('Enable Timer'),
+              subtitle: const Text('Start a countdown and enable DND'),
+              value: _isTimed,
+              onChanged: (val) => setState(() => _isTimed = val),
+            ),
+            if (_isTimed) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Duration (min)'),
+                    Row(
+                      children: [
+                        IconButton(
+                          onPressed: _timerDuration > 5
+                              ? () => setState(() => _timerDuration -= 5)
+                              : null,
+                          icon: const Icon(Icons.remove_circle_outline),
+                        ),
+                        Text(
+                          '$_timerDuration',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => setState(() => _timerDuration += 5),
+                          icon: const Icon(Icons.add_circle_outline),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: AppTheme.spacingLg),
 
             // Save button
@@ -540,6 +619,8 @@ class _EditHabitSheetState extends ConsumerState<_EditHabitSheet> {
       reminderTime: _reminderEnabled && _reminderTime != null
           ? '${_reminderTime!.hour}:${_reminderTime!.minute.toString().padLeft(2, '0')}'
           : null,
+      isTimed: _isTimed,
+      timerDuration: _isTimed ? _timerDuration : null,
     );
 
     await ref.read(habitNotifierProvider.notifier).updateHabit(updatedHabit);

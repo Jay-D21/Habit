@@ -27,7 +27,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -71,6 +71,10 @@ class AppDatabase extends _$AppDatabase {
             // But Drift supports custom updates.
             await (update(journalEntries)..where((tbl) => tbl.diaryId.isNull()))
                 .write(JournalEntriesCompanion(diaryId: Value(diaryId)));
+          }
+          if (from < 6) {
+            await m.addColumn(habits, habits.isTimed);
+            await m.addColumn(habits, habits.timerDuration);
           }
         },
       );

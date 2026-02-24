@@ -18,6 +18,7 @@ import '../features/auth/presentation/confirm_signup_screen.dart';
 import '../features/auth/presentation/verify_otp_screen.dart';
 
 import '../features/focus/presentation/focus_mode_screen.dart';
+import '../features/timer/presentation/habit_timer_screen.dart';
 import '../shared/widgets/main_scaffold.dart';
 
 /// App router configuration using GoRouter
@@ -164,6 +165,15 @@ class AppRouter {
         path: '/habits/:habitId',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => HabitDetailScreen(
+          habitId: state.pathParameters['habitId']!,
+        ),
+      ),
+
+      // Habit Timer (Full Screen)
+      GoRoute(
+        path: '/timer/:habitId',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => HabitTimerScreen(
           habitId: state.pathParameters['habitId']!,
         ),
       ),

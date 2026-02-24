@@ -116,6 +116,22 @@ class $HabitsTable extends Habits with TableInfo<$HabitsTable, HabitEntity> {
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('CHECK ("is_archived" IN (0, 1))'),
       defaultValue: const Constant(false));
+  static const VerificationMeta _isTimedMeta =
+      const VerificationMeta('isTimed');
+  @override
+  late final GeneratedColumn<bool> isTimed = GeneratedColumn<bool>(
+      'is_timed', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_timed" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _timerDurationMeta =
+      const VerificationMeta('timerDuration');
+  @override
+  late final GeneratedColumn<int> timerDuration = GeneratedColumn<int>(
+      'timer_duration', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
   @override
@@ -144,6 +160,8 @@ class $HabitsTable extends Habits with TableInfo<$HabitsTable, HabitEntity> {
         reminderEnabled,
         sortOrder,
         isArchived,
+        isTimed,
+        timerDuration,
         createdAt,
         updatedAt
       ];
@@ -234,6 +252,16 @@ class $HabitsTable extends Habits with TableInfo<$HabitsTable, HabitEntity> {
           isArchived.isAcceptableOrUnknown(
               data['is_archived']!, _isArchivedMeta));
     }
+    if (data.containsKey('is_timed')) {
+      context.handle(_isTimedMeta,
+          isTimed.isAcceptableOrUnknown(data['is_timed']!, _isTimedMeta));
+    }
+    if (data.containsKey('timer_duration')) {
+      context.handle(
+          _timerDurationMeta,
+          timerDuration.isAcceptableOrUnknown(
+              data['timer_duration']!, _timerDurationMeta));
+    }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
@@ -283,6 +311,10 @@ class $HabitsTable extends Habits with TableInfo<$HabitsTable, HabitEntity> {
           .read(DriftSqlType.int, data['${effectivePrefix}sort_order'])!,
       isArchived: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}is_archived'])!,
+      isTimed: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_timed'])!,
+      timerDuration: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}timer_duration']),
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping
@@ -311,6 +343,8 @@ class HabitEntity extends DataClass implements Insertable<HabitEntity> {
   final bool reminderEnabled;
   final int sortOrder;
   final bool isArchived;
+  final bool isTimed;
+  final int? timerDuration;
   final DateTime createdAt;
   final DateTime updatedAt;
   const HabitEntity(
@@ -328,6 +362,8 @@ class HabitEntity extends DataClass implements Insertable<HabitEntity> {
       required this.reminderEnabled,
       required this.sortOrder,
       required this.isArchived,
+      required this.isTimed,
+      this.timerDuration,
       required this.createdAt,
       required this.updatedAt});
   @override
@@ -353,6 +389,10 @@ class HabitEntity extends DataClass implements Insertable<HabitEntity> {
     map['reminder_enabled'] = Variable<bool>(reminderEnabled);
     map['sort_order'] = Variable<int>(sortOrder);
     map['is_archived'] = Variable<bool>(isArchived);
+    map['is_timed'] = Variable<bool>(isTimed);
+    if (!nullToAbsent || timerDuration != null) {
+      map['timer_duration'] = Variable<int>(timerDuration);
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -380,6 +420,10 @@ class HabitEntity extends DataClass implements Insertable<HabitEntity> {
       reminderEnabled: Value(reminderEnabled),
       sortOrder: Value(sortOrder),
       isArchived: Value(isArchived),
+      isTimed: Value(isTimed),
+      timerDuration: timerDuration == null && nullToAbsent
+          ? const Value.absent()
+          : Value(timerDuration),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -403,6 +447,8 @@ class HabitEntity extends DataClass implements Insertable<HabitEntity> {
       reminderEnabled: serializer.fromJson<bool>(json['reminderEnabled']),
       sortOrder: serializer.fromJson<int>(json['sortOrder']),
       isArchived: serializer.fromJson<bool>(json['isArchived']),
+      isTimed: serializer.fromJson<bool>(json['isTimed']),
+      timerDuration: serializer.fromJson<int?>(json['timerDuration']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -425,6 +471,8 @@ class HabitEntity extends DataClass implements Insertable<HabitEntity> {
       'reminderEnabled': serializer.toJson<bool>(reminderEnabled),
       'sortOrder': serializer.toJson<int>(sortOrder),
       'isArchived': serializer.toJson<bool>(isArchived),
+      'isTimed': serializer.toJson<bool>(isTimed),
+      'timerDuration': serializer.toJson<int?>(timerDuration),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -445,6 +493,8 @@ class HabitEntity extends DataClass implements Insertable<HabitEntity> {
           bool? reminderEnabled,
           int? sortOrder,
           bool? isArchived,
+          bool? isTimed,
+          Value<int?> timerDuration = const Value.absent(),
           DateTime? createdAt,
           DateTime? updatedAt}) =>
       HabitEntity(
@@ -463,6 +513,9 @@ class HabitEntity extends DataClass implements Insertable<HabitEntity> {
         reminderEnabled: reminderEnabled ?? this.reminderEnabled,
         sortOrder: sortOrder ?? this.sortOrder,
         isArchived: isArchived ?? this.isArchived,
+        isTimed: isTimed ?? this.isTimed,
+        timerDuration:
+            timerDuration.present ? timerDuration.value : this.timerDuration,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
       );
@@ -490,6 +543,10 @@ class HabitEntity extends DataClass implements Insertable<HabitEntity> {
       sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
       isArchived:
           data.isArchived.present ? data.isArchived.value : this.isArchived,
+      isTimed: data.isTimed.present ? data.isTimed.value : this.isTimed,
+      timerDuration: data.timerDuration.present
+          ? data.timerDuration.value
+          : this.timerDuration,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -512,6 +569,8 @@ class HabitEntity extends DataClass implements Insertable<HabitEntity> {
           ..write('reminderEnabled: $reminderEnabled, ')
           ..write('sortOrder: $sortOrder, ')
           ..write('isArchived: $isArchived, ')
+          ..write('isTimed: $isTimed, ')
+          ..write('timerDuration: $timerDuration, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -534,6 +593,8 @@ class HabitEntity extends DataClass implements Insertable<HabitEntity> {
       reminderEnabled,
       sortOrder,
       isArchived,
+      isTimed,
+      timerDuration,
       createdAt,
       updatedAt);
   @override
@@ -554,6 +615,8 @@ class HabitEntity extends DataClass implements Insertable<HabitEntity> {
           other.reminderEnabled == this.reminderEnabled &&
           other.sortOrder == this.sortOrder &&
           other.isArchived == this.isArchived &&
+          other.isTimed == this.isTimed &&
+          other.timerDuration == this.timerDuration &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -573,6 +636,8 @@ class HabitsCompanion extends UpdateCompanion<HabitEntity> {
   final Value<bool> reminderEnabled;
   final Value<int> sortOrder;
   final Value<bool> isArchived;
+  final Value<bool> isTimed;
+  final Value<int?> timerDuration;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   const HabitsCompanion({
@@ -590,6 +655,8 @@ class HabitsCompanion extends UpdateCompanion<HabitEntity> {
     this.reminderEnabled = const Value.absent(),
     this.sortOrder = const Value.absent(),
     this.isArchived = const Value.absent(),
+    this.isTimed = const Value.absent(),
+    this.timerDuration = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
   });
@@ -608,6 +675,8 @@ class HabitsCompanion extends UpdateCompanion<HabitEntity> {
     this.reminderEnabled = const Value.absent(),
     this.sortOrder = const Value.absent(),
     this.isArchived = const Value.absent(),
+    this.isTimed = const Value.absent(),
+    this.timerDuration = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
   })  : name = Value(name),
@@ -632,6 +701,8 @@ class HabitsCompanion extends UpdateCompanion<HabitEntity> {
     Expression<bool>? reminderEnabled,
     Expression<int>? sortOrder,
     Expression<bool>? isArchived,
+    Expression<bool>? isTimed,
+    Expression<int>? timerDuration,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
   }) {
@@ -650,6 +721,8 @@ class HabitsCompanion extends UpdateCompanion<HabitEntity> {
       if (reminderEnabled != null) 'reminder_enabled': reminderEnabled,
       if (sortOrder != null) 'sort_order': sortOrder,
       if (isArchived != null) 'is_archived': isArchived,
+      if (isTimed != null) 'is_timed': isTimed,
+      if (timerDuration != null) 'timer_duration': timerDuration,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
     });
@@ -670,6 +743,8 @@ class HabitsCompanion extends UpdateCompanion<HabitEntity> {
       Value<bool>? reminderEnabled,
       Value<int>? sortOrder,
       Value<bool>? isArchived,
+      Value<bool>? isTimed,
+      Value<int?>? timerDuration,
       Value<DateTime>? createdAt,
       Value<DateTime>? updatedAt}) {
     return HabitsCompanion(
@@ -687,6 +762,8 @@ class HabitsCompanion extends UpdateCompanion<HabitEntity> {
       reminderEnabled: reminderEnabled ?? this.reminderEnabled,
       sortOrder: sortOrder ?? this.sortOrder,
       isArchived: isArchived ?? this.isArchived,
+      isTimed: isTimed ?? this.isTimed,
+      timerDuration: timerDuration ?? this.timerDuration,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -737,6 +814,12 @@ class HabitsCompanion extends UpdateCompanion<HabitEntity> {
     if (isArchived.present) {
       map['is_archived'] = Variable<bool>(isArchived.value);
     }
+    if (isTimed.present) {
+      map['is_timed'] = Variable<bool>(isTimed.value);
+    }
+    if (timerDuration.present) {
+      map['timer_duration'] = Variable<int>(timerDuration.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -763,6 +846,8 @@ class HabitsCompanion extends UpdateCompanion<HabitEntity> {
           ..write('reminderEnabled: $reminderEnabled, ')
           ..write('sortOrder: $sortOrder, ')
           ..write('isArchived: $isArchived, ')
+          ..write('isTimed: $isTimed, ')
+          ..write('timerDuration: $timerDuration, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -3527,6 +3612,8 @@ typedef $$HabitsTableCreateCompanionBuilder = HabitsCompanion Function({
   Value<bool> reminderEnabled,
   Value<int> sortOrder,
   Value<bool> isArchived,
+  Value<bool> isTimed,
+  Value<int?> timerDuration,
   required DateTime createdAt,
   required DateTime updatedAt,
 });
@@ -3545,6 +3632,8 @@ typedef $$HabitsTableUpdateCompanionBuilder = HabitsCompanion Function({
   Value<bool> reminderEnabled,
   Value<int> sortOrder,
   Value<bool> isArchived,
+  Value<bool> isTimed,
+  Value<int?> timerDuration,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
 });
@@ -3623,6 +3712,12 @@ class $$HabitsTableFilterComposer
 
   ColumnFilters<bool> get isArchived => $composableBuilder(
       column: $table.isArchived, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isTimed => $composableBuilder(
+      column: $table.isTimed, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get timerDuration => $composableBuilder(
+      column: $table.timerDuration, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
@@ -3705,6 +3800,13 @@ class $$HabitsTableOrderingComposer
   ColumnOrderings<bool> get isArchived => $composableBuilder(
       column: $table.isArchived, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<bool> get isTimed => $composableBuilder(
+      column: $table.isTimed, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get timerDuration => $composableBuilder(
+      column: $table.timerDuration,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 
@@ -3762,6 +3864,12 @@ class $$HabitsTableAnnotationComposer
 
   GeneratedColumn<bool> get isArchived => $composableBuilder(
       column: $table.isArchived, builder: (column) => column);
+
+  GeneratedColumn<bool> get isTimed =>
+      $composableBuilder(column: $table.isTimed, builder: (column) => column);
+
+  GeneratedColumn<int> get timerDuration => $composableBuilder(
+      column: $table.timerDuration, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -3828,6 +3936,8 @@ class $$HabitsTableTableManager extends RootTableManager<
             Value<bool> reminderEnabled = const Value.absent(),
             Value<int> sortOrder = const Value.absent(),
             Value<bool> isArchived = const Value.absent(),
+            Value<bool> isTimed = const Value.absent(),
+            Value<int?> timerDuration = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
           }) =>
@@ -3846,6 +3956,8 @@ class $$HabitsTableTableManager extends RootTableManager<
             reminderEnabled: reminderEnabled,
             sortOrder: sortOrder,
             isArchived: isArchived,
+            isTimed: isTimed,
+            timerDuration: timerDuration,
             createdAt: createdAt,
             updatedAt: updatedAt,
           ),
@@ -3864,6 +3976,8 @@ class $$HabitsTableTableManager extends RootTableManager<
             Value<bool> reminderEnabled = const Value.absent(),
             Value<int> sortOrder = const Value.absent(),
             Value<bool> isArchived = const Value.absent(),
+            Value<bool> isTimed = const Value.absent(),
+            Value<int?> timerDuration = const Value.absent(),
             required DateTime createdAt,
             required DateTime updatedAt,
           }) =>
@@ -3882,6 +3996,8 @@ class $$HabitsTableTableManager extends RootTableManager<
             reminderEnabled: reminderEnabled,
             sortOrder: sortOrder,
             isArchived: isArchived,
+            isTimed: isTimed,
+            timerDuration: timerDuration,
             createdAt: createdAt,
             updatedAt: updatedAt,
           ),

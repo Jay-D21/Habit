@@ -25,6 +25,8 @@ class HabitRepository {
       priority: dbHabit.priority,
       sortOrder: dbHabit.sortOrder,
       isArchived: dbHabit.isArchived,
+      isTimed: dbHabit.isTimed,
+      timerDuration: dbHabit.timerDuration,
       createdAt: dbHabit.createdAt,
       updatedAt: dbHabit.updatedAt,
     );
@@ -46,6 +48,8 @@ class HabitRepository {
       priority: Value(model.priority),
       sortOrder: Value(model.sortOrder),
       isArchived: Value(model.isArchived),
+      isTimed: Value(model.isTimed),
+      timerDuration: Value(model.timerDuration),
       createdAt: Value(model.createdAt),
       updatedAt: Value(model.updatedAt),
     );
@@ -105,6 +109,8 @@ class HabitRepository {
       priority: updatedHabit.priority,
       sortOrder: updatedHabit.sortOrder,
       isArchived: updatedHabit.isArchived,
+      isTimed: updatedHabit.isTimed,
+      timerDuration: updatedHabit.timerDuration,
       createdAt: updatedHabit.createdAt,
       updatedAt: updatedHabit.updatedAt,
     );
@@ -131,6 +137,8 @@ class HabitRepository {
         priority: habit.priority,
         sortOrder: habit.sortOrder,
         isArchived: true,
+        isTimed: habit.isTimed,
+        timerDuration: habit.timerDuration,
         createdAt: habit.createdAt,
         updatedAt: DateTime.now(),
       );

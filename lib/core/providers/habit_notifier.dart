@@ -22,6 +22,8 @@ class HabitNotifier extends Notifier<void> {
     String? reminderTime,
     bool reminderEnabled = false,
     List<int>? customDays,
+    bool isTimed = false,
+    int? timerDuration,
   }) async {
     final now = DateTime.now();
     final habit = HabitModel(
@@ -36,6 +38,8 @@ class HabitNotifier extends Notifier<void> {
       reminderTime: reminderTime,
       reminderEnabled: reminderEnabled,
       customDays: customDays?.join(','),
+      isTimed: isTimed,
+      timerDuration: timerDuration,
       createdAt: now,
       updatedAt: now,
     );

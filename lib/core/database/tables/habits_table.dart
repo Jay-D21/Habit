@@ -19,6 +19,8 @@ class Habits extends Table {
       boolean().withDefault(const Constant(false))();
   IntColumn get sortOrder => integer().withDefault(const Constant(0))();
   BoolColumn get isArchived => boolean().withDefault(const Constant(false))();
+  BoolColumn get isTimed => boolean().withDefault(const Constant(false))();
+  IntColumn get timerDuration => integer().nullable()(); // Duration in minutes
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 }

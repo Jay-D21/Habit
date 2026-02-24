@@ -109,11 +109,32 @@ class _HabitCardState extends ConsumerState<HabitCard> {
                 color: habitColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Center(
-                child: Text(
-                  widget.habit.emoji,
-                  style: TextStyle(fontSize: widget.compact ? 22 : 26),
-                ),
+              child: Stack(
+                children: [
+                  Center(
+                    child: Text(
+                      widget.habit.emoji,
+                      style: TextStyle(fontSize: widget.compact ? 22 : 26),
+                    ),
+                  ),
+                  if (widget.habit.isTimed)
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.timer,
+                          size: 12,
+                          color: habitColor,
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
             SizedBox(
