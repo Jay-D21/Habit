@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers/notification_providers.dart';
+import '../../core/services/ad_service.dart';
 import 'habit_providers.dart';
 import 'gamification_providers.dart';
 import '../../features/habits/data/models/habit.dart';
@@ -117,6 +118,9 @@ class HabitNotifier extends Notifier<void> {
     ref.invalidate(overallStreakProvider);
     // Invalidate user progress provider if it existed
     ref.invalidate(userProgressProvider);
+
+    // Trigger interstitial ad after every N habit completions
+    ref.read(adFrequencyProvider.notifier).onHabitCompleted();
   }
 
   /// Uncomplete a habit for today

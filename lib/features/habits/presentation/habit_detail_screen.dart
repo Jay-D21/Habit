@@ -7,6 +7,7 @@ import '../../../app/theme/app_theme.dart';
 import '../../../core/providers/habit_providers.dart';
 import '../../../core/providers/habit_notifier.dart';
 import '../../../core/providers/notification_providers.dart';
+import '../../../core/services/ad_service.dart';
 import '../../timer/providers/habit_timer_providers.dart';
 import '../data/models/habit.dart';
 
@@ -57,152 +58,166 @@ class HabitDetailScreen extends ConsumerWidget {
               ),
             ],
           ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppTheme.spacingLg),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Habit card
-                Container(
-                  padding: const EdgeInsets.all(AppTheme.spacingXl),
-                  decoration: BoxDecoration(
-                    color: isDark ? AppColors.cardDark : AppColors.cardLight,
-                    borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                    border: Border.all(
-                      color:
-                          isDark ? AppColors.borderDark : AppColors.borderLight,
-                    ),
-                  ),
+          body: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(AppTheme.spacingLg),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(habit.emoji, style: const TextStyle(fontSize: 64)),
-                      const SizedBox(height: AppTheme.spacingMd),
-                      Text(
-                        habit.name,
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      if (habit.description != null) ...[
-                        const SizedBox(height: AppTheme.spacingSm),
-                        Text(
-                          habit.description!,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onSurface
-                                .withValues(alpha: 0.6),
+                      // Habit card
+                      Container(
+                        padding: const EdgeInsets.all(AppTheme.spacingXl),
+                        decoration: BoxDecoration(
+                          color:
+                              isDark ? AppColors.cardDark : AppColors.cardLight,
+                          borderRadius:
+                              BorderRadius.circular(AppTheme.radiusLg),
+                          border: Border.all(
+                            color: isDark
+                                ? AppColors.borderDark
+                                : AppColors.borderLight,
                           ),
-                          textAlign: TextAlign.center,
                         ),
+                        child: Column(
+                          children: [
+                            Text(habit.emoji,
+                                style: const TextStyle(fontSize: 64)),
+                            const SizedBox(height: AppTheme.spacingMd),
+                            Text(
+                              habit.name,
+                              style: theme.textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            if (habit.description != null) ...[
+                              const SizedBox(height: AppTheme.spacingSm),
+                              Text(
+                                habit.description!,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: theme.colorScheme.onSurface
+                                      .withValues(alpha: 0.6),
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: AppTheme.spacingLg),
+
+                      // Stats row
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _StatCard(
+                              icon: Icons.local_fire_department_rounded,
+                              value: streakAsync.when(
+                                data: (streak) => '$streak',
+                                loading: () => '-',
+                                error: (_, __) => '0',
+                              ),
+                              label: 'Current Streak',
+                              color: AppColors.accent,
+                            ),
+                          ),
+                          const SizedBox(width: AppTheme.spacingMd),
+                          Expanded(
+                            child: _StatCard(
+                              icon: Icons.repeat_rounded,
+                              value: habit.frequency.name,
+                              label: 'Frequency',
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppTheme.spacingMd),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _StatCard(
+                              icon: Icons.category_rounded,
+                              value: habit.category.name,
+                              label: 'Category',
+                              color: AppColors.success,
+                            ),
+                          ),
+                          const SizedBox(width: AppTheme.spacingMd),
+                          Expanded(
+                            child: _StatCard(
+                              icon: Icons.flag_rounded,
+                              value: '${habit.targetCount}x',
+                              label: 'Daily Target',
+                              color: AppColors.warning,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppTheme.spacingXl),
+
+                      // Timer Button (if timed)
+                      if (habit.isTimed) ...[
+                        SizedBox(
+                          width: double.infinity,
+                          child: FilledButton.icon(
+                            onPressed: () {
+                              // Start timer logic
+                              final duration = habit.timerDuration ?? 15;
+                              ref.read(habitTimerProvider.notifier).startTimer(
+                                    habit.id!,
+                                    duration,
+                                  );
+                              context.push('/timer/${habit.id}');
+                            },
+                            icon: const Icon(Icons.timer_outlined),
+                            label: Text(
+                                'Start ${habit.timerDuration ?? 15}m Timer'),
+                            style: FilledButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: AppTheme.spacingMd),
+                              backgroundColor: Color(
+                                  int.tryParse(habit.colorHex, radix: 16) ??
+                                      0xFF2196F3),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: AppTheme.spacingMd),
                       ],
+
+                      // Complete button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            HapticFeedback.mediumImpact();
+                            await ref
+                                .read(habitNotifierProvider.notifier)
+                                .completeHabit(id);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('Habit completed! 🎉')),
+                              );
+                            }
+                          },
+                          icon: const Icon(Icons.check_rounded),
+                          label: const Text('Complete for Today'),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: AppTheme.spacingMd),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                const SizedBox(height: AppTheme.spacingLg),
-
-                // Stats row
-                Row(
-                  children: [
-                    Expanded(
-                      child: _StatCard(
-                        icon: Icons.local_fire_department_rounded,
-                        value: streakAsync.when(
-                          data: (streak) => '$streak',
-                          loading: () => '-',
-                          error: (_, __) => '0',
-                        ),
-                        label: 'Current Streak',
-                        color: AppColors.accent,
-                      ),
-                    ),
-                    const SizedBox(width: AppTheme.spacingMd),
-                    Expanded(
-                      child: _StatCard(
-                        icon: Icons.repeat_rounded,
-                        value: habit.frequency.name,
-                        label: 'Frequency',
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppTheme.spacingMd),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _StatCard(
-                        icon: Icons.category_rounded,
-                        value: habit.category.name,
-                        label: 'Category',
-                        color: AppColors.success,
-                      ),
-                    ),
-                    const SizedBox(width: AppTheme.spacingMd),
-                    Expanded(
-                      child: _StatCard(
-                        icon: Icons.flag_rounded,
-                        value: '${habit.targetCount}x',
-                        label: 'Daily Target',
-                        color: AppColors.warning,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppTheme.spacingXl),
-
-                // Timer Button (if timed)
-                if (habit.isTimed) ...[
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: () {
-                        // Start timer logic
-                        final duration = habit.timerDuration ?? 15;
-                        ref.read(habitTimerProvider.notifier).startTimer(
-                              habit.id!,
-                              duration,
-                            );
-                        context.push('/timer/${habit.id}');
-                      },
-                      icon: const Icon(Icons.timer_outlined),
-                      label: Text('Start ${habit.timerDuration ?? 15}m Timer'),
-                      style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: AppTheme.spacingMd),
-                        backgroundColor: Color(
-                            int.tryParse(habit.colorHex, radix: 16) ??
-                                0xFF2196F3),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: AppTheme.spacingMd),
-                ],
-
-                // Complete button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () async {
-                      HapticFeedback.mediumImpact();
-                      await ref
-                          .read(habitNotifierProvider.notifier)
-                          .completeHabit(id);
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Habit completed! 🎉')),
-                        );
-                      }
-                    },
-                    icon: const Icon(Icons.check_rounded),
-                    label: const Text('Complete for Today'),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: AppTheme.spacingMd),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+              // Banner Ad at bottom of Habit Detail
+              const BannerAdWidget(),
+            ],
           ),
         );
       },

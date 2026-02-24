@@ -66,7 +66,7 @@ class _HabitCardState extends ConsumerState<HabitCard> {
             .read(habitNotifierProvider.notifier)
             .toggleHabit(widget.habit.id!);
         // Track for ad frequency (show after 2 completions)
-        ref.read(adFrequencyProvider.notifier).onHabitCompleted(ref);
+        ref.read(adFrequencyProvider.notifier).onHabitCompleted();
       },
       onLongPressCancel: () {
         setState(() => _isPressed = false);
@@ -240,7 +240,7 @@ class _HabitCardState extends ConsumerState<HabitCard> {
                       .read(habitNotifierProvider.notifier)
                       .toggleHabit(widget.habit.id!);
                   // Track for ad frequency (show after 2 completions)
-                  ref.read(adFrequencyProvider.notifier).onHabitCompleted(ref);
+                  ref.read(adFrequencyProvider.notifier).onHabitCompleted();
                 },
                 borderRadius: BorderRadius.circular(12),
                 child: AnimatedContainer(

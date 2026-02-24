@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../app/theme/app_colors.dart';
@@ -17,56 +16,20 @@ class MainScaffold extends ConsumerStatefulWidget {
 }
 
 class _MainScaffoldState extends ConsumerState<MainScaffold> {
-  DateTime? _lastBackPressTime;
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(driveBackupServiceProvider).autoBackupOrSync();
-      ref.read(adFrequencyProvider.notifier).onAppOpen(ref);
+      ref.read(adFrequencyProvider.notifier).onAppOpen();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false, // We handle all back navigation manually
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-
-        final location = GoRouterState.of(context).uri.toString();
-        final isHome = location.startsWith('/home');
-
-        if (!isHome) {
-          // If not on Home tab, back button navigates to Home
-          context.go('/home');
-          return;
-        }
-
-        // Double-tap-to-exit logic on Home tab
-        final now = DateTime.now();
-        if (_lastBackPressTime == null ||
-            now.difference(_lastBackPressTime!) > const Duration(seconds: 2)) {
-          _lastBackPressTime = now;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Tap back again to exit'),
-              duration: Duration(seconds: 2),
-            ),
-          );
-        } else {
-          // Exit app
-          // For Android, we can just pop the navigator if it's the root
-          // But since we are caught in PopScope, we need to defer to system exit
-          // Alternatively, we can use SystemNavigator.pop()
-          SystemNavigator.pop();
-        }
-      },
-      child: Scaffold(
-        body: widget.child,
-        bottomNavigationBar: const _BottomNavBar(),
-      ),
+    return Scaffold(
+      body: widget.child,
+      bottomNavigationBar: const _BottomNavBar(),
     );
   }
 }

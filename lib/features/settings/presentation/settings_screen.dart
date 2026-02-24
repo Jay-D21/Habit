@@ -11,6 +11,7 @@ import '../../../main.dart';
 import '../../../core/services/drive_backup_service.dart';
 import '../../../core/services/aws_auth_service.dart';
 import '../../../core/services/feedback_service.dart';
+import '../../../core/services/ad_service.dart';
 import '../../../core/providers/theme_provider.dart';
 
 /// Settings screen with Google Sign-In and backup
@@ -53,298 +54,312 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         automaticallyImplyLeading: false,
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Account Section
-              _SettingsSection(
-                title: 'Account',
-                children: [
-                  if (awsAuthState.isSignedIn) ...[
-                    Padding(
-                      padding: const EdgeInsets.all(AppTheme.spacingMd),
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 24,
-                            backgroundColor:
-                                AppColors.primary.withValues(alpha: 0.1),
-                            child: const Icon(Icons.person,
-                                color: AppColors.primary),
-                          ),
-                          const SizedBox(width: AppTheme.spacingMd),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Account Section
+                    _SettingsSection(
+                      title: 'Account',
+                      children: [
+                        if (awsAuthState.isSignedIn) ...[
+                          Padding(
+                            padding: const EdgeInsets.all(AppTheme.spacingMd),
+                            child: Row(
                               children: [
-                                Text(
-                                  awsAuthState.user?.username ?? 'User',
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
+                                CircleAvatar(
+                                  radius: 24,
+                                  backgroundColor:
+                                      AppColors.primary.withValues(alpha: 0.1),
+                                  child: const Icon(Icons.person,
+                                      color: AppColors.primary),
+                                ),
+                                const SizedBox(width: AppTheme.spacingMd),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        awsAuthState.user?.username ?? 'User',
+                                        style: theme.textTheme.titleMedium
+                                            ?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Text(
+                                        'Signed in with AWS',
+                                        style:
+                                            theme.textTheme.bodySmall?.copyWith(
+                                          color: theme.colorScheme.onSurface
+                                              .withValues(alpha: 0.6),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
+                                TextButton(
+                                  onPressed: () => _signOut(context),
+                                  child: const Text('Sign Out'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ] else ...[
+                          Padding(
+                            padding: const EdgeInsets.all(AppTheme.spacingMd),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
                                 Text(
-                                  'Signed in with AWS',
-                                  style: theme.textTheme.bodySmall?.copyWith(
+                                  'Sign in to sync your habits',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
                                     color: theme.colorScheme.onSurface
                                         .withValues(alpha: 0.6),
+                                  ),
+                                ),
+                                const SizedBox(height: AppTheme.spacingMd),
+                                ElevatedButton.icon(
+                                  onPressed: () => context.push('/login'),
+                                  icon:
+                                      const Icon(Icons.login_rounded, size: 24),
+                                  label: const Text('Sign In / Sign Up'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                      horizontal: 16,
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          TextButton(
-                            onPressed: () => _signOut(context),
-                            child: const Text('Sign Out'),
-                          ),
                         ],
-                      ),
-                    ),
-                  ] else ...[
-                    Padding(
-                      padding: const EdgeInsets.all(AppTheme.spacingMd),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(
-                            'Sign in to sync your habits',
+                      ],
+                    ).animate().fadeIn(delay: 100.ms),
+
+                    // Notifications Section
+                    _SettingsSection(
+                      title: 'Notifications',
+                      children: [
+                        _SettingsSwitch(
+                          icon: Icons.notifications_rounded,
+                          title: 'Daily Reminders',
+                          subtitle: 'Get reminded to complete your habits',
+                          value: _dailyReminders,
+                          onChanged: (v) => setState(() => _dailyReminders = v),
+                        ),
+                        _SettingsSwitch(
+                          icon: Icons.summarize_rounded,
+                          title: 'Weekly Reports',
+                          subtitle: 'Receive weekly progress summary',
+                          value: _weeklyReports,
+                          onChanged: (v) => setState(() => _weeklyReports = v),
+                        ),
+                      ],
+                    ).animate().fadeIn(delay: 150.ms),
+
+                    // Preferences Section
+                    _SettingsSection(
+                      title: 'Preferences',
+                      children: [
+                        _SettingsTile(
+                          icon: Icons.emoji_events_rounded,
+                          title: 'Badges & Achievements',
+                          trailing: const Icon(Icons.chevron_right_rounded),
+                          onTap: () => context.push('/badges'),
+                        ),
+                        _SettingsSwitch(
+                          icon: Icons.volume_up_rounded,
+                          title: 'Sound Effects',
+                          subtitle: 'Play sounds for completions',
+                          value: _soundEffects,
+                          onChanged: (v) => setState(() => _soundEffects = v),
+                        ),
+                        _SettingsSwitch(
+                          icon: Icons.vibration_rounded,
+                          title: 'Haptic Feedback',
+                          subtitle: 'Vibrate on interactions',
+                          value: _hapticFeedback,
+                          onChanged: (v) => setState(() => _hapticFeedback = v),
+                        ),
+                        _SettingsTile(
+                          icon: Icons.palette_rounded,
+                          title: 'Theme',
+                          trailing: Text(
+                            _selectedTheme,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: AppColors.primary,
+                            ),
+                          ),
+                          onTap: () => _showThemeSelector(context),
+                        ),
+                      ],
+                    ).animate().fadeIn(delay: 200.ms),
+
+                    // Data Section
+                    _SettingsSection(
+                      title: 'Data',
+                      children: [
+                        _SettingsTile(
+                          icon: Icons.backup_rounded,
+                          title: 'Backup Data',
+                          trailing: const Icon(Icons.chevron_right_rounded),
+                          onTap: () => _backupData(context),
+                        ),
+                        _SettingsTile(
+                          icon: Icons.download_rounded,
+                          title: 'Export Summary',
+                          trailing: const Icon(Icons.chevron_right_rounded),
+                          onTap: () => _exportData(context),
+                        ),
+                        _SettingsTile(
+                          icon: Icons.delete_outline_rounded,
+                          title: 'Clear All Data',
+                          titleColor: AppColors.error,
+                          trailing: const Icon(Icons.chevron_right_rounded,
+                              color: AppColors.error),
+                          onTap: () => _showClearDataDialog(context),
+                        ),
+                      ],
+                    ).animate().fadeIn(delay: 250.ms),
+
+                    // Support Section
+                    _SettingsSection(
+                      title: 'Support',
+                      children: [
+                        _SettingsTile(
+                          icon: Icons.feedback_rounded,
+                          title: 'Send Feedback',
+                          trailing: const Icon(Icons.chevron_right_rounded),
+                          onTap: () =>
+                              _sendFeedback(context, isBugReport: false),
+                        ),
+                        _SettingsTile(
+                          icon: Icons.bug_report_rounded,
+                          title: 'Report a Problem',
+                          trailing: const Icon(Icons.chevron_right_rounded),
+                          onTap: () =>
+                              _sendFeedback(context, isBugReport: true),
+                        ),
+                        _SettingsTile(
+                          icon: Icons.star_rounded,
+                          title: 'Rate Us',
+                          trailing: const Icon(Icons.chevron_right_rounded),
+                          onTap: () => _launchUrl(
+                              'https://play.google.com/store/apps/details?id=com.ilabs.loop'),
+                        ),
+                      ],
+                    ).animate().fadeIn(delay: 275.ms),
+
+                    // About Section
+                    _SettingsSection(
+                      title: 'About',
+                      children: [
+                        _SettingsTile(
+                          icon: Icons.info_outline_rounded,
+                          title: 'Version',
+                          trailing: Text(
+                            '1.0.0',
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: theme.colorScheme.onSurface
-                                  .withValues(alpha: 0.6),
+                                  .withValues(alpha: 0.5),
                             ),
                           ),
-                          const SizedBox(height: AppTheme.spacingMd),
-                          ElevatedButton.icon(
-                            onPressed: () => context.push('/login'),
-                            icon: const Icon(Icons.login_rounded, size: 24),
-                            label: const Text('Sign In / Sign Up'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 12,
-                                horizontal: 16,
-                              ),
+                        ),
+                      ],
+                    ).animate().fadeIn(delay: 300.ms),
+
+                    const SizedBox(height: AppTheme.spacingXl),
+
+                    // Social Media Icons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _SocialIconButton(
+                          assetPath: 'assets/images/instagram_logo.png',
+                          onTap: () => _launchUrl(
+                              'https://www.instagram.com/i._labs/?utm_source=ig_web_button_share_sheet'),
+                        ),
+                        const SizedBox(width: AppTheme.spacingLg),
+                        _SocialIconButton(
+                          assetPath: 'assets/images/x_logo.png',
+                          onTap: () => _launchUrl('https://x.com/JayDeore21'),
+                        ),
+                        const SizedBox(width: AppTheme.spacingLg),
+                        _SocialIconButton(
+                          assetPath: 'assets/images/linkedin_logo.png',
+                          onTap: () => _launchUrl(
+                              'https://www.linkedin.com/in/jay-deore-50b4b8342'),
+                        ),
+                      ],
+                    ).animate().fadeIn(delay: 350.ms),
+
+                    const SizedBox(height: AppTheme.spacingMd),
+
+                    // Tutorial
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: AppTheme.spacingLg),
+                      child: _SettingsTile(
+                        icon: Icons.school_rounded,
+                        title: 'View Tutorial',
+                        onTap: () => context.push('/tutorial'),
+                      ),
+                    ).animate().fadeIn(delay: 375.ms),
+
+                    const SizedBox(height: AppTheme.spacingLg),
+
+                    // App Logo and Brand
+                    Center(
+                      child: Column(
+                        children: [
+                          Image.asset(
+                            'assets/images/loop_habit_logo.png',
+                            width: 48,
+                            height: 48,
+                          ),
+                          const SizedBox(height: AppTheme.spacingSm),
+                          RichText(
+                            text: TextSpan(
+                              style: theme.textTheme.titleMedium,
+                              children: const [
+                                TextSpan(
+                                  text: 'i ',
+                                  style: TextStyle(fontWeight: FontWeight.w300),
+                                ),
+                                TextSpan(
+                                  text: "Lab's",
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: AppTheme.spacingXs),
+                          Text(
+                            'Version 1.0.0',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.5),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                ],
-              ).animate().fadeIn(delay: 100.ms),
+                    ).animate().fadeIn(delay: 400.ms),
 
-              // Notifications Section
-              _SettingsSection(
-                title: 'Notifications',
-                children: [
-                  _SettingsSwitch(
-                    icon: Icons.notifications_rounded,
-                    title: 'Daily Reminders',
-                    subtitle: 'Get reminded to complete your habits',
-                    value: _dailyReminders,
-                    onChanged: (v) => setState(() => _dailyReminders = v),
-                  ),
-                  _SettingsSwitch(
-                    icon: Icons.summarize_rounded,
-                    title: 'Weekly Reports',
-                    subtitle: 'Receive weekly progress summary',
-                    value: _weeklyReports,
-                    onChanged: (v) => setState(() => _weeklyReports = v),
-                  ),
-                ],
-              ).animate().fadeIn(delay: 150.ms),
-
-              // Preferences Section
-              _SettingsSection(
-                title: 'Preferences',
-                children: [
-                  _SettingsTile(
-                    icon: Icons.emoji_events_rounded,
-                    title: 'Badges & Achievements',
-                    trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () => context.push('/badges'),
-                  ),
-                  _SettingsSwitch(
-                    icon: Icons.volume_up_rounded,
-                    title: 'Sound Effects',
-                    subtitle: 'Play sounds for completions',
-                    value: _soundEffects,
-                    onChanged: (v) => setState(() => _soundEffects = v),
-                  ),
-                  _SettingsSwitch(
-                    icon: Icons.vibration_rounded,
-                    title: 'Haptic Feedback',
-                    subtitle: 'Vibrate on interactions',
-                    value: _hapticFeedback,
-                    onChanged: (v) => setState(() => _hapticFeedback = v),
-                  ),
-                  _SettingsTile(
-                    icon: Icons.palette_rounded,
-                    title: 'Theme',
-                    trailing: Text(
-                      _selectedTheme,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    onTap: () => _showThemeSelector(context),
-                  ),
-                ],
-              ).animate().fadeIn(delay: 200.ms),
-
-              // Data Section
-              _SettingsSection(
-                title: 'Data',
-                children: [
-                  _SettingsTile(
-                    icon: Icons.backup_rounded,
-                    title: 'Backup Data',
-                    trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () => _backupData(context),
-                  ),
-                  _SettingsTile(
-                    icon: Icons.download_rounded,
-                    title: 'Export Summary',
-                    trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () => _exportData(context),
-                  ),
-                  _SettingsTile(
-                    icon: Icons.delete_outline_rounded,
-                    title: 'Clear All Data',
-                    titleColor: AppColors.error,
-                    trailing: const Icon(Icons.chevron_right_rounded,
-                        color: AppColors.error),
-                    onTap: () => _showClearDataDialog(context),
-                  ),
-                ],
-              ).animate().fadeIn(delay: 250.ms),
-
-              // Support Section
-              _SettingsSection(
-                title: 'Support',
-                children: [
-                  _SettingsTile(
-                    icon: Icons.feedback_rounded,
-                    title: 'Send Feedback',
-                    trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () => _sendFeedback(context, isBugReport: false),
-                  ),
-                  _SettingsTile(
-                    icon: Icons.bug_report_rounded,
-                    title: 'Report a Problem',
-                    trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () => _sendFeedback(context, isBugReport: true),
-                  ),
-                  _SettingsTile(
-                    icon: Icons.star_rounded,
-                    title: 'Rate Us',
-                    trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () => _launchUrl(
-                        'https://play.google.com/store/apps/details?id=com.ilabs.loop'),
-                  ),
-                ],
-              ).animate().fadeIn(delay: 275.ms),
-
-              // About Section
-              _SettingsSection(
-                title: 'About',
-                children: [
-                  _SettingsTile(
-                    icon: Icons.info_outline_rounded,
-                    title: 'Version',
-                    trailing: Text(
-                      '1.0.0',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color:
-                            theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                      ),
-                    ),
-                  ),
-                ],
-              ).animate().fadeIn(delay: 300.ms),
-
-              const SizedBox(height: AppTheme.spacingXl),
-
-              // Social Media Icons
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _SocialIconButton(
-                    assetPath: 'assets/images/instagram_logo.png',
-                    onTap: () => _launchUrl(
-                        'https://www.instagram.com/i._labs/?utm_source=ig_web_button_share_sheet'),
-                  ),
-                  const SizedBox(width: AppTheme.spacingLg),
-                  _SocialIconButton(
-                    assetPath: 'assets/images/x_logo.png',
-                    onTap: () => _launchUrl('https://x.com/JayDeore21'),
-                  ),
-                  const SizedBox(width: AppTheme.spacingLg),
-                  _SocialIconButton(
-                    assetPath: 'assets/images/linkedin_logo.png',
-                    onTap: () => _launchUrl(
-                        'https://www.linkedin.com/in/jay-deore-50b4b8342'),
-                  ),
-                ],
-              ).animate().fadeIn(delay: 350.ms),
-
-              const SizedBox(height: AppTheme.spacingMd),
-
-              // Tutorial
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
-                child: _SettingsTile(
-                  icon: Icons.school_rounded,
-                  title: 'View Tutorial',
-                  onTap: () => context.push('/tutorial'),
-                ),
-              ).animate().fadeIn(delay: 375.ms),
-
-              const SizedBox(height: AppTheme.spacingLg),
-
-              // App Logo and Brand
-              Center(
-                child: Column(
-                  children: [
-                    Image.asset(
-                      'assets/images/loop_habit_logo.png',
-                      width: 48,
-                      height: 48,
-                    ),
-                    const SizedBox(height: AppTheme.spacingSm),
-                    RichText(
-                      text: TextSpan(
-                        style: theme.textTheme.titleMedium,
-                        children: const [
-                          TextSpan(
-                            text: 'i ',
-                            style: TextStyle(fontWeight: FontWeight.w300),
-                          ),
-                          TextSpan(
-                            text: "Lab's",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: AppTheme.spacingXs),
-                    Text(
-                      'Version 1.0.0',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color:
-                            theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                      ),
-                    ),
+                    const SizedBox(height: 100),
                   ],
                 ),
-              ).animate().fadeIn(delay: 400.ms),
-
-              const SizedBox(height: 100),
-            ],
-          ),
+              ),
+            ),
+            // Banner Ad at bottom of Settings
+            const BannerAdWidget(),
+          ],
         ),
       ),
     );

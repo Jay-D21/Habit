@@ -5,15 +5,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// AdMob Ad Unit IDs
 class AdConfig {
-  // Production Ad Unit IDs
-  static const String bannerAdUnitId = 'ca-app-pub-5797130278067710/5969721289';
-  static const String interstitialAdUnitId =
-      'ca-app-pub-5797130278067710/9908966293';
-
-  // Test Ad Unit IDs (uncomment for development)
-  // static const String bannerAdUnitId = 'ca-app-pub-3940256099942544/6300978111';
+  // Production Ad Unit IDs (re-enable after verifying in AdMob console)
+  // static const String bannerAdUnitId = 'ca-app-pub-5797130278067710/5969721289';
   // static const String interstitialAdUnitId =
-  //     'ca-app-pub-3940256099942544/1033173712';
+  //     'ca-app-pub-5797130278067710/9908966293';
+
+  // Test Ad Unit IDs (for development/debugging)
+  static const String bannerAdUnitId = 'ca-app-pub-3940256099942544/6300978111';
+  static const String interstitialAdUnitId =
+      'ca-app-pub-3940256099942544/1033173712';
 }
 
 /// Initialize Mobile Ads SDK
@@ -255,7 +255,7 @@ class AdFrequencyManager extends Notifier<AdFrequencyState> {
   }
 
   /// Call this when a habit is completed
-  Future<void> onHabitCompleted(WidgetRef ref) async {
+  Future<void> onHabitCompleted() async {
     debugPrint('🎯 onHabitCompleted called!');
     final newCount = state.habitCompletionCount + 1;
     state = state.copyWith(habitCompletionCount: newCount);
@@ -265,12 +265,12 @@ class AdFrequencyManager extends Notifier<AdFrequencyState> {
       debugPrint('🎬 Threshold reached! Showing interstitial ad...');
       // Reset counter and show ad
       state = state.copyWith(habitCompletionCount: 0);
-      await _showInterstitialAd(ref);
+      await _showInterstitialAd();
     }
   }
 
   /// Call this when app opens (in main.dart or splash)
-  Future<void> onAppOpen(WidgetRef ref) async {
+  Future<void> onAppOpen() async {
     final prefs = await SharedPreferences.getInstance();
     final newCount = state.appOpenCount + 1;
 
@@ -281,18 +281,18 @@ class AdFrequencyManager extends Notifier<AdFrequencyState> {
     if (newCount >= _appOpensBeforeAd && newCount % _appOpensBeforeAd == 0) {
       // Small delay to let app load first
       await Future.delayed(const Duration(seconds: 2));
-      await _showInterstitialAd(ref);
+      await _showInterstitialAd();
     }
   }
 
-  Future<void> _showInterstitialAd(WidgetRef ref) async {
+  Future<void> _showInterstitialAd() async {
     final adManager = ref.read(interstitialAdManagerProvider);
     await adManager.showAd();
   }
 
   /// Manually trigger an interstitial ad
-  Future<void> showInterstitialNow(WidgetRef ref) async {
-    await _showInterstitialAd(ref);
+  Future<void> showInterstitialNow() async {
+    await _showInterstitialAd();
   }
 }
 
@@ -321,81 +321,44 @@ final adFrequencyProvider =
   return AdFrequencyManager();
 });
 
-/// Banner Ad Widget - use this in your screens
-class BannerAdWidget extends ConsumerWidget {
+/// Banner Ad Widget — each instance creates and owns its own BannerAd.
+/// This avoids the "AdWidget already in Widget tree" error.
+class BannerAdWidget extends StatefulWidget {
   const BannerAdWidget({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final adState = ref.watch(bannerAdProvider);
-
-    // Successfully loaded ad
-    if (adState.isLoaded && adState.ad != null) {
-      return Container(
-        alignment: Alignment.center,
-        width: double.infinity,
-        height: 60, // Fixed height to prevent layout shifts
-        child: SizedBox(
-          width: adState.ad!.size.width.toDouble(),
-          height: adState.ad!.size.height.toDouble(),
-          child: AdWidget(ad: adState.ad!),
-        ),
-      );
-    }
-
-    // When ad is loading or failed, return an empty invisible box
-    // to keep UX clean and professional instead of showing error/loading text
-    return const SizedBox.shrink();
-  }
+  State<BannerAdWidget> createState() => _BannerAdWidgetState();
 }
 
-/// Adaptive Banner Ad Widget - adapts to screen width
-class AdaptiveBannerAdWidget extends ConsumerStatefulWidget {
-  const AdaptiveBannerAdWidget({super.key});
-
-  @override
-  ConsumerState<AdaptiveBannerAdWidget> createState() =>
-      _AdaptiveBannerAdWidgetState();
-}
-
-class _AdaptiveBannerAdWidgetState
-    extends ConsumerState<AdaptiveBannerAdWidget> {
+class _BannerAdWidgetState extends State<BannerAdWidget> {
   BannerAd? _bannerAd;
   bool _isLoaded = false;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void initState() {
+    super.initState();
     _loadAd();
   }
 
-  Future<void> _loadAd() async {
-    final size = await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
-      MediaQuery.of(context).size.width.truncate(),
-    );
-
-    if (size == null) {
-      debugPrint('Unable to get adaptive banner size');
-      return;
-    }
-
+  void _loadAd() {
     _bannerAd = BannerAd(
       adUnitId: AdConfig.bannerAdUnitId,
-      size: size,
+      size: AdSize.banner,
       request: const AdRequest(),
       listener: BannerAdListener(
         onAdLoaded: (ad) {
-          setState(() {
-            _isLoaded = true;
-          });
+          if (mounted) {
+            setState(() => _isLoaded = true);
+          }
         },
         onAdFailedToLoad: (ad, error) {
-          debugPrint('Adaptive banner failed: $error');
+          debugPrint('Banner ad failed: ${error.message}');
           ad.dispose();
+          _bannerAd = null;
         },
       ),
     );
-    await _bannerAd!.load();
+    _bannerAd!.load();
   }
 
   @override
@@ -407,13 +370,18 @@ class _AdaptiveBannerAdWidgetState
   @override
   Widget build(BuildContext context) {
     if (!_isLoaded || _bannerAd == null) {
-      return const SizedBox.shrink();
+      return const SizedBox(width: double.infinity, height: 50);
     }
 
-    return SizedBox(
-      width: _bannerAd!.size.width.toDouble(),
-      height: _bannerAd!.size.height.toDouble(),
-      child: AdWidget(ad: _bannerAd!),
+    return Container(
+      alignment: Alignment.center,
+      width: double.infinity,
+      height: 50,
+      child: SizedBox(
+        width: _bannerAd!.size.width.toDouble(),
+        height: _bannerAd!.size.height.toDouble(),
+        child: AdWidget(ad: _bannerAd!),
+      ),
     );
   }
 }

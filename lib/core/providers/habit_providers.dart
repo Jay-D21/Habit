@@ -17,10 +17,10 @@ final habitsProvider = StreamProvider<List<HabitModel>>((ref) {
   return repository.watchAllHabits();
 });
 
-/// Provider for a single habit by ID
-final habitProvider = FutureProvider.family<HabitModel?, int>((ref, id) async {
+/// Stream Provider for a single habit by ID (reactive)
+final habitProvider = StreamProvider.family<HabitModel?, int>((ref, id) {
   final repository = ref.watch(habitRepositoryProvider);
-  return await repository.getHabitById(id);
+  return repository.watchHabitById(id);
 });
 
 /// Provider for today's date (normalized to midnight)

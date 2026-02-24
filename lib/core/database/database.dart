@@ -107,6 +107,11 @@ class AppDatabase extends _$AppDatabase {
     return (select(habits)..where((h) => h.id.equals(id))).getSingleOrNull();
   }
 
+  /// Watch habit by ID (reactive stream)
+  Stream<HabitEntity?> watchHabitById(int id) {
+    return (select(habits)..where((h) => h.id.equals(id))).watchSingleOrNull();
+  }
+
   /// Insert a new habit
   Future<int> insertHabit(HabitsCompanion habit) {
     return into(habits).insert(habit);

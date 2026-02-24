@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://jay-d21.github.io/Habit/sitemap.xml

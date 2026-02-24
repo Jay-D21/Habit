@@ -79,6 +79,13 @@ class HabitRepository {
     return habit != null ? _toModel(habit) : null;
   }
 
+  /// Watch a single habit by ID (reactive stream)
+  Stream<HabitModel?> watchHabitById(int id) {
+    return _db
+        .watchHabitById(id)
+        .map((habit) => habit != null ? _toModel(habit) : null);
+  }
+
   /// Create a new habit
   Future<int> createHabit(HabitModel habit) async {
     final now = DateTime.now();

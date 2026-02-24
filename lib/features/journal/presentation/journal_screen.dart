@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_theme.dart';
+import '../../../core/services/ad_service.dart';
 import '../../../../core/providers/journal_providers.dart';
 
 /// Journal screen with entries list
@@ -125,6 +126,12 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
               ),
             ),
             const SizedBox(height: AppTheme.spacingSm),
+
+            // Banner Ad
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
+              child: BannerAdWidget(),
+            ),
 
             Expanded(
               child: Consumer(

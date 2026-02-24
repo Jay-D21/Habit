@@ -8,6 +8,7 @@ import 'package:habit_tracker/core/database/database.dart';
 import 'package:habit_tracker/main.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_theme.dart';
+import '../../../core/services/ad_service.dart';
 import '../providers/focus_providers.dart';
 import '../services/focus_timer_service.dart';
 
@@ -230,6 +231,9 @@ class _FocusModeScreenState extends ConsumerState<FocusModeScreen>
                 ),
               ),
             ),
+
+            // Banner Ad
+            const BannerAdWidget(),
 
             // Bottom stats
             Padding(
