@@ -3,12 +3,12 @@ import 'package:drift/drift.dart';
 import '../../../core/database/database.dart';
 import '../../habits/data/models/habit.dart';
 import '../../../core/models/priority_enum.dart';
+import '../../habits/data/repositories/habit_repository.dart';
+import '../data/badge_seeder.dart';
+import '../data/models/achievement.dart';
 
 /// Service responsible for handling Gamification logic,
 /// including XP calculations, leveling systems, and progress tracking.
-import '../../habits/data/repositories/habit_repository.dart';
-import '../data/badge_seeder.dart';
-
 class GamificationService {
   final AppDatabase _db;
   final HabitRepository _habitRepository;
@@ -111,19 +111,23 @@ class GamificationService {
 
     // 2. Get User Progress
     final userProgress = await (_db.select(_db.userProgress).getSingleOrNull());
+    UserProgressEntity updatedUserProgress;
 
     if (userProgress == null) {
+      final xp = earnedXp;
+      final lvl = calculateLevel(earnedXp);
+
       // Create initial progress if not exists
       await _db.into(_db.userProgress).insert(
             UserProgressCompanion.insert(
-              xp: Value(earnedXp),
-              level: Value(calculateLevel(earnedXp)),
+              xp: Value(xp),
+              level: Value(lvl),
               joinDate: DateTime.now(),
               lastUpdated: DateTime.now(),
             ),
           );
+      updatedUserProgress = await (_db.select(_db.userProgress).getSingle());
     } else {
-      // Update existing progress
       final newTotalXp = userProgress.xp + earnedXp;
       final newLevel = calculateLevel(newTotalXp);
 
@@ -135,6 +139,85 @@ class GamificationService {
             level: Value(newLevel),
             lastUpdated: Value(DateTime.now())),
       );
+      updatedUserProgress =
+          userProgress.copyWith(xp: newTotalXp, level: newLevel);
+    }
+
+    // 3. Check for Achievements
+    await checkAchievements(habit, currentStreak, updatedUserProgress);
+  }
+
+  /// Checks if any achievements should be unlocked based on the recent habit completion.
+  Future<void> checkAchievements(HabitModel habit, int currentStreak,
+      UserProgressEntity userProgress) async {
+    final achievements = await _db.select(_db.achievements).get();
+
+    for (final achievement in achievements) {
+      // If already unlocked, skip unless we need to update progress (optional,
+      // but for simplicity we skip logic if unlocked usually,
+      // though updating progress for repeatable achievements might be desired in future)
+      if (achievement.isUnlocked) continue;
+
+      bool shouldUnlock = false;
+      int newCurrentValue = achievement.currentValue;
+
+      // Type: habitCount
+      if (achievement.type == AchievementType.habitCount.index) {
+        newCurrentValue++;
+        if (newCurrentValue >= achievement.targetValue) {
+          shouldUnlock = true;
+        }
+      }
+      // Type: streak
+      else if (achievement.type == AchievementType.streak.index) {
+        if (currentStreak > newCurrentValue) {
+          newCurrentValue = currentStreak;
+        }
+        if (newCurrentValue >= achievement.targetValue) {
+          shouldUnlock = true;
+        }
+      }
+      // Type: perfectDay (Early Bird)
+      else if (achievement.type == AchievementType.perfectDay.index) {
+        if (achievement.key == 'early_bird') {
+          final now = DateTime.now();
+          if (now.hour < 7) {
+            shouldUnlock = true;
+            newCurrentValue = 1;
+          }
+        }
+      }
+      // Type: milestone (Level)
+      else if (achievement.type == AchievementType.milestone.index) {
+        if (userProgress.level >= achievement.targetValue) {
+          shouldUnlock = true;
+          newCurrentValue = userProgress.level;
+        } else {
+          newCurrentValue = userProgress.level; // Update progress
+        }
+      }
+      // Type: priority
+      else if (achievement.type == AchievementType.priority.index) {
+        // High (4) or Critical (5)
+        if (habit.priority >= 4) {
+          newCurrentValue++;
+          if (newCurrentValue >= achievement.targetValue) {
+            shouldUnlock = true;
+          }
+        }
+      }
+
+      // Update DB if changed
+      if (shouldUnlock || newCurrentValue != achievement.currentValue) {
+        await (_db.update(_db.achievements)
+              ..where((a) => a.id.equals(achievement.id)))
+            .write(AchievementsCompanion(
+          currentValue: Value(newCurrentValue),
+          isUnlocked: shouldUnlock ? const Value(true) : const Value(false),
+          unlockedAt:
+              shouldUnlock ? Value(DateTime.now()) : const Value.absent(),
+        ));
+      }
     }
   }
 }
