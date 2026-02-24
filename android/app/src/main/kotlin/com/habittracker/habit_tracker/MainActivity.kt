@@ -34,7 +34,7 @@ class MainActivity: FlutterActivity() {
             } else if (call.method == "enableDnd") {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     if (notificationManager.isNotificationPolicyAccessGranted) {
-                        notificationManager.interruptionFilter = NotificationManager.INTERRUPTION_FILTER_PRIORITY
+                        notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
                         result.success(true)
                     } else {
                         result.error("PERMISSION_DENIED", "Notification policy access not granted", null)
@@ -45,7 +45,7 @@ class MainActivity: FlutterActivity() {
             } else if (call.method == "disableDnd") {
                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     if (notificationManager.isNotificationPolicyAccessGranted) {
-                        notificationManager.interruptionFilter = NotificationManager.INTERRUPTION_FILTER_ALL
+                        notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL)
                         result.success(true)
                     } else {
                         result.error("PERMISSION_DENIED", "Notification policy access not granted", null)

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../app/theme/app_colors.dart';
@@ -20,19 +21,19 @@ class _AddHabitSheetState extends ConsumerState<AddHabitSheet> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descController = TextEditingController();
+  final _timerDurationController = TextEditingController(text: '15');
 
   String _emoji = '⭐';
   HabitCategory _category = HabitCategory.health;
   HabitFrequency _frequency = HabitFrequency.daily;
   Color _color = AppColors.primary;
   int _targetCount = 1;
-  int _priority = 3; // Medium
+  final int _priority = 3; // Medium
   bool _reminderEnabled = false;
   TimeOfDay _reminderTime = const TimeOfDay(hour: 9, minute: 0);
 
   // New timer fields
   bool _isTimed = false;
-  int _timerDuration = 15; // Minutes
 
   final _emojis = ['⭐', '🧘', '📚', '💪', '💧', '🏃', '✍️', '🎯', '💤', '🥗'];
 
@@ -50,6 +51,7 @@ class _AddHabitSheetState extends ConsumerState<AddHabitSheet> {
   void dispose() {
     _nameController.dispose();
     _descController.dispose();
+    _timerDurationController.dispose();
     super.dispose();
   }
 
@@ -119,7 +121,8 @@ class _AddHabitSheetState extends ConsumerState<AddHabitSheet> {
                             border: Border.all(color: _color, width: 2),
                           ),
                           child: Center(
-                            child: Text(_emoji, style: const TextStyle(fontSize: 32)),
+                            child: Text(_emoji,
+                                style: const TextStyle(fontSize: 32)),
                           ),
                         ),
                       ),
@@ -130,7 +133,8 @@ class _AddHabitSheetState extends ConsumerState<AddHabitSheet> {
                           child: ListView.separated(
                             scrollDirection: Axis.horizontal,
                             itemCount: _colors.length,
-                            separatorBuilder: (_, __) => const SizedBox(width: 8),
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(width: 8),
                             itemBuilder: (context, index) {
                               final color = _colors[index];
                               final isSelected = _color == color;
@@ -143,12 +147,14 @@ class _AddHabitSheetState extends ConsumerState<AddHabitSheet> {
                                     color: color,
                                     shape: BoxShape.circle,
                                     border: isSelected
-                                        ? Border.all(color: Colors.white, width: 3)
+                                        ? Border.all(
+                                            color: Colors.white, width: 3)
                                         : null,
                                     boxShadow: isSelected
                                         ? [
                                             BoxShadow(
-                                              color: color.withValues(alpha: 0.4),
+                                              color:
+                                                  color.withValues(alpha: 0.4),
                                               blurRadius: 8,
                                               offset: const Offset(0, 4),
                                             )
@@ -156,7 +162,8 @@ class _AddHabitSheetState extends ConsumerState<AddHabitSheet> {
                                         : null,
                                   ),
                                   child: isSelected
-                                      ? const Icon(Icons.check, color: Colors.white, size: 20)
+                                      ? const Icon(Icons.check,
+                                          color: Colors.white, size: 20)
                                       : null,
                                 ),
                               );
@@ -194,7 +201,7 @@ class _AddHabitSheetState extends ConsumerState<AddHabitSheet> {
                     children: [
                       Expanded(
                         child: DropdownButtonFormField<HabitCategory>(
-                          value: _category,
+                          initialValue: _category,
                           decoration: InputDecoration(
                             labelText: 'Category',
                             border: OutlineInputBorder(
@@ -204,7 +211,8 @@ class _AddHabitSheetState extends ConsumerState<AddHabitSheet> {
                           items: HabitCategory.values.map((c) {
                             return DropdownMenuItem(
                               value: c,
-                              child: Text(c.name[0].toUpperCase() + c.name.substring(1)),
+                              child: Text(c.name[0].toUpperCase() +
+                                  c.name.substring(1)),
                             );
                           }).toList(),
                           onChanged: (val) => setState(() => _category = val!),
@@ -213,7 +221,7 @@ class _AddHabitSheetState extends ConsumerState<AddHabitSheet> {
                       const SizedBox(width: 16),
                       Expanded(
                         child: DropdownButtonFormField<HabitFrequency>(
-                          value: _frequency,
+                          initialValue: _frequency,
                           decoration: InputDecoration(
                             labelText: 'Frequency',
                             border: OutlineInputBorder(
@@ -223,7 +231,8 @@ class _AddHabitSheetState extends ConsumerState<AddHabitSheet> {
                           items: HabitFrequency.values.map((f) {
                             return DropdownMenuItem(
                               value: f,
-                              child: Text(f.name[0].toUpperCase() + f.name.substring(1)),
+                              child: Text(f.name[0].toUpperCase() +
+                                  f.name.substring(1)),
                             );
                           }).toList(),
                           onChanged: (val) => setState(() => _frequency = val!),
@@ -234,7 +243,7 @@ class _AddHabitSheetState extends ConsumerState<AddHabitSheet> {
                   const SizedBox(height: 24),
 
                   // Target Count
-                  _SectionHeader(title: 'Daily Goal'),
+                  const _SectionHeader(title: 'Daily Goal'),
                   const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.all(16),
@@ -242,7 +251,8 @@ class _AddHabitSheetState extends ConsumerState<AddHabitSheet> {
                       color: isDark ? AppColors.cardDark : AppColors.cardLight,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.1),
                       ),
                     ),
                     child: Row(
@@ -279,15 +289,17 @@ class _AddHabitSheetState extends ConsumerState<AddHabitSheet> {
                   const SizedBox(height: 24),
 
                   // Timed Habit Toggle
-                  _SectionHeader(title: 'Timer Mode'),
+                  const _SectionHeader(title: 'Timer Mode'),
                   const SizedBox(height: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
                       color: isDark ? AppColors.cardDark : AppColors.cardLight,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.1),
                       ),
                     ),
                     child: Column(
@@ -295,12 +307,14 @@ class _AddHabitSheetState extends ConsumerState<AddHabitSheet> {
                         SwitchListTile(
                           contentPadding: EdgeInsets.zero,
                           title: const Text('Enable Timer'),
-                          subtitle: const Text('Start a countdown and enable DND'),
+                          subtitle:
+                              const Text('Start a countdown and enable DND'),
                           value: _isTimed,
                           onChanged: (val) async {
                             if (val) {
                               final dnd = ref.read(dndServiceProvider);
-                              final hasPermission = await dnd.checkPermissions();
+                              final hasPermission =
+                                  await dnd.checkPermissions();
                               if (!hasPermission) {
                                 await dnd.requestPermissions();
                               }
@@ -315,26 +329,27 @@ class _AddHabitSheetState extends ConsumerState<AddHabitSheet> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('Duration', style: theme.textTheme.bodyLarge),
-                                Row(
-                                  children: [
-                                    IconButton(
-                                      onPressed: _timerDuration > 5
-                                          ? () => setState(() => _timerDuration -= 5)
-                                          : null,
-                                      icon: const Icon(Icons.remove_circle_outline),
-                                    ),
-                                    Text(
-                                      '$_timerDuration min',
-                                      style: theme.textTheme.titleMedium?.copyWith(
-                                        fontWeight: FontWeight.bold,
+                                Text('Duration',
+                                    style: theme.textTheme.bodyLarge),
+                                SizedBox(
+                                  width: 120,
+                                  child: TextFormField(
+                                    controller: _timerDurationController,
+                                    keyboardType: TextInputType.number,
+                                    textAlign: TextAlign.right,
+                                    decoration: InputDecoration(
+                                      suffixText: ' min',
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 8),
                                     ),
-                                    IconButton(
-                                      onPressed: () => setState(() => _timerDuration += 5),
-                                      icon: const Icon(Icons.add_circle_outline),
-                                    ),
-                                  ],
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                    ],
+                                  ),
                                 ),
                               ],
                             ),
@@ -346,15 +361,17 @@ class _AddHabitSheetState extends ConsumerState<AddHabitSheet> {
                   const SizedBox(height: 24),
 
                   // Reminder
-                  _SectionHeader(title: 'Notifications'),
+                  const _SectionHeader(title: 'Notifications'),
                   const SizedBox(height: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
                       color: isDark ? AppColors.cardDark : AppColors.cardLight,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.1),
                       ),
                     ),
                     child: Column(
@@ -365,10 +382,13 @@ class _AddHabitSheetState extends ConsumerState<AddHabitSheet> {
                           value: _reminderEnabled,
                           onChanged: (val) async {
                             if (val) {
-                              final granted = await ref.read(notificationServiceProvider).requestPermissions();
+                              final granted = await ref
+                                  .read(notificationServiceProvider)
+                                  .requestPermissions();
                               if (!granted && context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Permission denied')),
+                                  const SnackBar(
+                                      content: Text('Permission denied')),
                                 );
                                 return;
                               }
@@ -382,7 +402,8 @@ class _AddHabitSheetState extends ConsumerState<AddHabitSheet> {
                             contentPadding: EdgeInsets.zero,
                             title: const Text('Time'),
                             trailing: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
                                 color: _color.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
@@ -450,7 +471,8 @@ class _AddHabitSheetState extends ConsumerState<AddHabitSheet> {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            const Text('Pick an Emoji', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text('Pick an Emoji',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             Expanded(
               child: GridView.builder(
@@ -474,7 +496,8 @@ class _AddHabitSheetState extends ConsumerState<AddHabitSheet> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Center(
-                        child: Text(_emojis[index], style: const TextStyle(fontSize: 32)),
+                        child: Text(_emojis[index],
+                            style: const TextStyle(fontSize: 32)),
                       ),
                     ),
                   );
@@ -490,24 +513,29 @@ class _AddHabitSheetState extends ConsumerState<AddHabitSheet> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final colorHex = _color.value.toRadixString(16).padLeft(8, '0');
-    final reminderTimeStr = '${_reminderTime.hour}:${_reminderTime.minute.toString().padLeft(2, '0')}';
+    final colorHex = _color.toARGB32().toRadixString(16).padLeft(8, '0');
+    final reminderTimeStr =
+        '${_reminderTime.hour}:${_reminderTime.minute.toString().padLeft(2, '0')}';
 
     try {
       await ref.read(habitNotifierProvider.notifier).createHabit(
-        name: _nameController.text.trim(),
-        emoji: _emoji,
-        category: _category,
-        frequency: _frequency,
-        colorHex: colorHex,
-        targetCount: _targetCount,
-        priority: _priority,
-        description: _descController.text.trim().isEmpty ? null : _descController.text.trim(),
-        reminderEnabled: _reminderEnabled,
-        reminderTime: reminderTimeStr,
-        isTimed: _isTimed,
-        timerDuration: _isTimed ? _timerDuration : null,
-      );
+            name: _nameController.text.trim(),
+            emoji: _emoji,
+            category: _category,
+            frequency: _frequency,
+            colorHex: colorHex,
+            targetCount: _targetCount,
+            priority: _priority,
+            description: _descController.text.trim().isEmpty
+                ? null
+                : _descController.text.trim(),
+            reminderEnabled: _reminderEnabled,
+            reminderTime: reminderTimeStr,
+            isTimed: _isTimed,
+            timerDuration: _isTimed
+                ? (int.tryParse(_timerDurationController.text) ?? 15)
+                : null,
+          );
 
       if (mounted) {
         context.pop();
@@ -534,9 +562,10 @@ class _SectionHeader extends StatelessWidget {
     return Text(
       title,
       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-        fontWeight: FontWeight.bold,
-        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-      ),
+            fontWeight: FontWeight.bold,
+            color:
+                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+          ),
     );
   }
 }

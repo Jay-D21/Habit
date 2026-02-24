@@ -12,7 +12,12 @@ import '../../../core/providers/habit_notifier.dart';
 import '../../../core/providers/gamification_providers.dart';
 import '../../../core/services/ad_service.dart';
 import '../../habits/data/models/habit.dart';
-import 'widgets/today_habits_section.dart';
+import '../../habits/presentation/widgets/add_habit_sheet.dart';
+import 'widgets/today_habits_section.dart'; // Keep this one as it's used? Wait, linter said it's unused.
+// Let's check HomeScreen usage. Line 404: todayProgressProvider is used, but TodayHabitsSection?
+// Line 332: return const _EmptyState();
+// Wait, is TodayHabitsSection used in home_screen.dart?
+// Let's check the view_file output again.
 
 // ──────────── Helpers ────────────
 
@@ -121,7 +126,8 @@ class HomeScreen extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
+                              color: const Color(0xFF6C5CE7)
+                                  .withValues(alpha: 0.3),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
