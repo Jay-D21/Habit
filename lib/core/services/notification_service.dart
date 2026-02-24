@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import '../../features/habits/data/models/habit.dart';
@@ -16,7 +18,14 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
 
   Future<void> init() async {
-    tz.initializeTimeZones();
+    try {
+      tz.initializeTimeZones();
+      final String timeZoneName = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(timeZoneName));
+      debugPrint('🔔 NotificationService: Local timezone set to $timeZoneName');
+    } catch (e) {
+      debugPrint('❌ NotificationService: Failed to initialize timezone: $e');
+    }
 
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -32,15 +41,34 @@ class NotificationService {
         // Handle notification tap
       },
     );
+
+    // Create Notification Channel for Android
+    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      'habit_channel',
+      'Habit Reminders',
+      description: 'Notifications for habit reminders',
+      importance: Importance.max,
+    );
+
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
   }
 
   Future<bool> requestPermissions() async {
-    final bool? androidGranted = await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.requestNotificationsPermission();
+    final androidImplementation =
+        flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
 
-    return androidGranted ?? false;
+    final bool? notificationsGranted =
+        await androidImplementation?.requestNotificationsPermission();
+
+    // Also check for exact alarm permission on Android 12+
+    final bool? exactAlarmsGranted =
+        await androidImplementation?.requestExactAlarmsPermission();
+
+    return (notificationsGranted ?? false) && (exactAlarmsGranted ?? true);
   }
 
   Future<void> scheduleNotification({
@@ -49,11 +77,15 @@ class NotificationService {
     required String body,
     required DateTime scheduledTime,
   }) async {
+    final scheduledTZ = tz.TZDateTime.from(scheduledTime, tz.local);
+    debugPrint(
+        '🔔 NotificationService: Scheduling notification ID $id for $scheduledTZ');
+
     await flutterLocalNotificationsPlugin.zonedSchedule(
       id,
       title,
       body,
-      tz.TZDateTime.from(scheduledTime, tz.local),
+      scheduledTZ,
       const NotificationDetails(
         android: AndroidNotificationDetails(
           'habit_channel',
@@ -86,11 +118,15 @@ class NotificationService {
     required HabitFrequency frequency,
     List<int>? customDays,
   }) async {
+    debugPrint(
+        '🔔 NotificationService: Scheduling habit "$habitName" (ID: $habitId) at $reminderTime, freq: $frequency');
+
     final timeParts = reminderTime.split(':');
     final hour = int.parse(timeParts[0]);
     final minute = int.parse(timeParts[1]);
 
     final now = DateTime.now();
+    debugPrint('🔔 NotificationService: Current time is $now');
     var scheduledDate = DateTime(now.year, now.month, now.day, hour, minute);
 
     // If time has passed today, schedule for tomorrow (as a base)
@@ -115,11 +151,16 @@ class NotificationService {
 
     // Helper to schedule for a specific day of week
     Future<void> scheduleForDay(int dayOfWeek) async {
+      final scheduledDate = _nextInstanceOfDayAndTime(dayOfWeek, hour, minute);
+      final id = habitId * 10 + dayOfWeek;
+      debugPrint(
+          '🔔 NotificationService: Scheduling weekly for day $dayOfWeek (ID: $id) at $scheduledDate');
+
       await flutterLocalNotificationsPlugin.zonedSchedule(
-        habitId * 10 + dayOfWeek,
+        id,
         'Time to $habitName!',
         'Don\'t break your streak!',
-        _nextInstanceOfDayAndTime(dayOfWeek, hour, minute),
+        scheduledDate,
         const NotificationDetails(
           android: AndroidNotificationDetails(
             'habit_channel',
@@ -149,11 +190,16 @@ class NotificationService {
     // We use a different ID convention for simple daily: habitId * 10
 
     if (frequency == HabitFrequency.daily) {
+      final scheduledDate = _nextInstanceOfTime(hour, minute);
+      final id = habitId * 10;
+      debugPrint(
+          '🔔 NotificationService: Scheduling daily (ID: $id) at $scheduledDate');
+
       await flutterLocalNotificationsPlugin.zonedSchedule(
-        habitId * 10,
+        id,
         'Time to $habitName!',
         'Don\'t break your streak!',
-        _nextInstanceOfTime(hour, minute),
+        scheduledDate,
         const NotificationDetails(
           android: AndroidNotificationDetails(
             'habit_channel',
@@ -224,5 +270,28 @@ class NotificationService {
 
   Future<void> cancelAllNotifications() async {
     await flutterLocalNotificationsPlugin.cancelAll();
+  }
+
+  /// Show an immediate test notification
+  Future<void> showTestNotification() async {
+    debugPrint('🔔 NotificationService: Showing test notification');
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'test_channel',
+      'Test Notifications',
+      channelDescription: 'Channel for testing notifications',
+      importance: Importance.max,
+      priority: Priority.high,
+      ticker: 'ticker',
+    );
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.show(
+      999,
+      'Test Notification',
+      'If you see this, notifications are working!',
+      platformChannelSpecifics,
+      payload: 'item x',
+    );
   }
 }

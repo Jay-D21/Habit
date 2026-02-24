@@ -8,7 +8,6 @@ import '../../../app/theme/app_theme.dart';
 import '../../../../core/providers/habit_providers.dart';
 import '../../../../core/providers/habit_notifier.dart';
 import '../data/models/habit.dart';
-import '../../home/presentation/widgets/today_habits_section.dart';
 import 'widgets/add_habit_sheet.dart';
 import '../../../core/services/ad_service.dart';
 

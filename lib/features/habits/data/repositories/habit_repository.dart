@@ -232,10 +232,40 @@ class HabitRepository {
     return completions.map(_completionToModel).toList();
   }
 
+  /// Watch completions for a habit in a date range (reactive stream)
+  Stream<List<HabitCompletionModel>> watchCompletionsForHabit(
+    int habitId,
+    DateTime start,
+    DateTime end,
+  ) {
+    return _db
+        .watchCompletionsForHabit(
+          habitId,
+          startDate: start,
+          endDate: end,
+        )
+        .map((completions) => completions.map(_completionToModel).toList());
+  }
+
   /// Get all completions for today
   Future<List<HabitCompletionModel>> getTodayCompletions() async {
     final completions = await _db.getTodayCompletions();
     return completions.map(_completionToModel).toList();
+  }
+
+  /// Watch all completions for today (reactive stream)
+  Stream<List<HabitCompletionModel>> watchTodayCompletions() {
+    return _db
+        .watchTodayCompletions()
+        .map((completions) => completions.map(_completionToModel).toList());
+  }
+
+  /// Watch all completions over a date range (reactive stream)
+  Stream<List<HabitCompletionModel>> watchCompletionsForDateRange(
+      DateTime start, DateTime end) {
+    return _db
+        .watchCompletionsForDateRange(start, end)
+        .map((completions) => completions.map(_completionToModel).toList());
   }
 
   /// Calculate current streak for a habit

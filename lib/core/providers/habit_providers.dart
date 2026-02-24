@@ -29,11 +29,11 @@ final todayProvider = Provider<DateTime>((ref) {
   return DateTime(now.year, now.month, now.day);
 });
 
-/// Provider for today's completions
+/// Stream Provider for today's completions (reactive)
 final todayCompletionsProvider =
-    FutureProvider<List<HabitCompletionModel>>((ref) async {
+    StreamProvider<List<HabitCompletionModel>>((ref) {
   final repository = ref.watch(habitRepositoryProvider);
-  return await repository.getTodayCompletions();
+  return repository.watchTodayCompletions();
 });
 
 /// Provider to check if a specific habit is completed today
@@ -140,15 +140,57 @@ final todayProgressProvider = Provider<double>((ref) {
   );
 });
 
-/// Provider for habit completions in a specific month
+/// Stream Provider for habit completions in a specific month (reactive)
 final habitMonthCompletionsProvider =
-    FutureProvider.family<List<int>, ({int habitId, DateTime month})>(
-        (ref, arg) async {
+    StreamProvider.family<List<int>, ({int habitId, DateTime month})>(
+        (ref, arg) {
   final repository = ref.watch(habitRepositoryProvider);
   final start = DateTime(arg.month.year, arg.month.month, 1);
-  final end = DateTime(arg.month.year, arg.month.month + 1, 0);
+  final end = DateTime(arg.month.year, arg.month.month + 1, 0, 23, 59, 59);
 
-  final completions =
-      await repository.getCompletionsForHabit(arg.habitId, start, end);
-  return completions.map((c) => c.date.day).toList();
+  return repository
+      .watchCompletionsForHabit(arg.habitId, start, end)
+      .map((completions) => completions.map((c) => c.date.day).toList());
+});
+
+/// Stream Provider for weekly progress rates
+final weeklyProgressProvider = StreamProvider<List<double>>((ref) {
+  final habitsAsync = ref.watch(habitsProvider);
+  final now = DateTime.now();
+  final startOfWeek = DateTime(now.year, now.month, now.day - 6);
+  final endOfWeek = DateTime(now.year, now.month, now.day, 23, 59, 59);
+
+  return habitsAsync.when(
+    data: (habits) {
+      if (habits.isEmpty) return Stream.value(List.filled(7, 0.0));
+
+      final repository = ref.watch(habitRepositoryProvider);
+      return repository
+          .watchCompletionsForDateRange(startOfWeek, endOfWeek)
+          .map((allCompletions) {
+        final List<double> rates = [];
+        for (int i = 6; i >= 0; i--) {
+          final day = DateTime(now.year, now.month, now.day - i);
+          int completedHabitsForDay = 0;
+
+          for (final habit in habits) {
+            final completionsForHabitDay = allCompletions.where((c) =>
+                c.habitId == habit.id &&
+                c.date.year == day.year &&
+                c.date.month == day.month &&
+                c.date.day == day.day);
+            if (completionsForHabitDay.isNotEmpty) {
+              completedHabitsForDay++;
+            }
+          }
+          rates.add(habits.isNotEmpty
+              ? (completedHabitsForDay / habits.length * 100)
+              : 0);
+        }
+        return rates;
+      });
+    },
+    loading: () => Stream.value(List.filled(7, 0.0)),
+    error: (_, __) => Stream.value(List.filled(7, 0.0)),
+  );
 });

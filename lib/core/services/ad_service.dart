@@ -8,14 +8,12 @@ class AdConfig {
   // Production Ad Unit IDs
   static const String bannerAdUnitId = 'ca-app-pub-5797130278067710/5969721289';
   static const String interstitialAdUnitId =
-      'ca-app-pub-5797130278067710/1883330139';
-  static const String nativeAdUnitId = 'ca-app-pub-5797130278067710/9908966293';
+      'ca-app-pub-5797130278067710/9908966293';
 
   // Test Ad Unit IDs (uncomment for development)
   // static const String bannerAdUnitId = 'ca-app-pub-3940256099942544/6300978111';
   // static const String interstitialAdUnitId =
   //     'ca-app-pub-3940256099942544/1033173712';
-  // static const String nativeAdUnitId = 'ca-app-pub-3940256099942544/2247696110';
 }
 
 /// Initialize Mobile Ads SDK
@@ -330,7 +328,6 @@ class BannerAdWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final adState = ref.watch(bannerAdProvider);
-    final theme = Theme.of(context);
 
     // Successfully loaded ad
     if (adState.isLoaded && adState.ad != null) {
@@ -338,12 +335,6 @@ class BannerAdWidget extends ConsumerWidget {
         alignment: Alignment.center,
         width: double.infinity,
         height: 60, // Fixed height to prevent layout shifts
-        decoration: BoxDecoration(
-          color: theme.scaffoldBackgroundColor, // Match background
-          border: Border.all(
-            color: theme.colorScheme.outline.withValues(alpha: 0.1),
-          ),
-        ),
         child: SizedBox(
           width: adState.ad!.size.width.toDouble(),
           height: adState.ad!.size.height.toDouble(),
@@ -352,94 +343,9 @@ class BannerAdWidget extends ConsumerWidget {
       );
     }
 
-    // Error state - failed after max retries
-    if (adState.hasError && adState.retryCount >= BannerAdNotifier.maxRetries) {
-      return Container(
-        height: 60, // Fixed height
-        alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.errorContainer.withValues(alpha: 0.1),
-          border: Border.all(
-            color: theme.colorScheme.error.withValues(alpha: 0.2),
-          ),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.warning_amber_rounded,
-              size: 16,
-              color: theme.colorScheme.error.withValues(alpha: 0.6),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Ad failed to load',
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                ref.read(bannerAdProvider.notifier).retry();
-              },
-              style: TextButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: Text(
-                'Retry',
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    // Loading or retrying state
-    return Container(
-      height: 60, // Fixed height matches other states
-      alignment: Alignment.center,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.1),
-        ),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 12,
-            height: 12,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            adState.hasError && adState.retryCount > 0
-                ? 'Retrying ad... (${adState.retryCount}/${BannerAdNotifier.maxRetries})'
-                : 'Loading ad...',
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
-            ),
-          ),
-        ],
-      ),
-    );
+    // When ad is loading or failed, return an empty invisible box
+    // to keep UX clean and professional instead of showing error/loading text
+    return const SizedBox.shrink();
   }
 }
 

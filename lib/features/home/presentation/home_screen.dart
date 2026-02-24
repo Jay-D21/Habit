@@ -13,7 +13,6 @@ import '../../../core/providers/gamification_providers.dart';
 import '../../../core/services/ad_service.dart';
 import '../../habits/data/models/habit.dart';
 import '../../habits/presentation/widgets/add_habit_sheet.dart';
-import 'widgets/today_habits_section.dart'; // Keep this one as it's used? Wait, linter said it's unused.
 // Let's check HomeScreen usage. Line 404: todayProgressProvider is used, but TodayHabitsSection?
 // Line 332: return const _EmptyState();
 // Wait, is TodayHabitsSection used in home_screen.dart?
@@ -56,32 +55,6 @@ String _todayQuote() {
       DateTime.now().difference(DateTime(DateTime.now().year)).inDays;
   return _quotes[dayOfYear % _quotes.length];
 }
-
-// ──────────── Weekly Progress Provider ────────────
-
-final weeklyProgressProvider = FutureProvider<List<double>>((ref) async {
-  final habits = await ref.read(habitsProvider.future);
-  if (habits.isEmpty) return List.filled(7, 0.0);
-
-  final now = DateTime.now();
-  final repo = ref.read(habitRepositoryProvider);
-
-  final List<double> rates = [];
-  for (int i = 6; i >= 0; i--) {
-    final day = DateTime(now.year, now.month, now.day - i);
-    int completed = 0;
-    for (final habit in habits) {
-      final completions = await repo.getCompletionsForHabit(
-        habit.id!,
-        day,
-        day.add(const Duration(hours: 23, minutes: 59)),
-      );
-      if (completions.isNotEmpty) completed++;
-    }
-    rates.add(habits.isNotEmpty ? (completed / habits.length * 100) : 0);
-  }
-  return rates;
-});
 
 // ──────────── Home Screen ────────────
 

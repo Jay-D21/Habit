@@ -5,10 +5,11 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/providers/habit_notifier.dart';
 import '../../../../core/providers/notification_providers.dart';
+import '../../../../shared/widgets/priority_selector_widget.dart';
+import '../../../../shared/widgets/icon_emoji_picker.dart';
 import '../../../timer/providers/habit_timer_providers.dart';
+import '../../../../core/models/priority_enum.dart';
 import '../../data/models/habit.dart';
-
-// No color_picker_sheet.dart import needed as we inline it
 
 class AddHabitSheet extends ConsumerStatefulWidget {
   const AddHabitSheet({super.key});
@@ -28,7 +29,6 @@ class _AddHabitSheetState extends ConsumerState<AddHabitSheet> {
   HabitFrequency _frequency = HabitFrequency.daily;
   Color _color = AppColors.primary;
   int _targetCount = 1;
-  final int _priority = 3; // Medium
   bool _reminderEnabled = false;
   TimeOfDay _reminderTime = const TimeOfDay(hour: 9, minute: 0);
 
@@ -38,14 +38,28 @@ class _AddHabitSheetState extends ConsumerState<AddHabitSheet> {
   final _emojis = ['⭐', '🧘', '📚', '💪', '💧', '🏃', '✍️', '🎯', '💤', '🥗'];
 
   final _colors = [
-    const Color(0xFF6C5CE7), // Purple
-    const Color(0xFF0984E3), // Blue
-    const Color(0xFF00B894), // Green
-    const Color(0xFFFD79A8), // Pink
-    const Color(0xFFFF7675), // Red
-    const Color(0xFFFF9F43), // Orange
-    const Color(0xFF636E72), // Grey
+    const Color(0xFFFF4B4B), // Red
+    const Color(0xFFFF7B4B), // Orange
+    const Color(0xFFFFB84B), // Amber
+    const Color(0xFFFFF14B), // Yellow
+    const Color(0xFFD4FF4B), // Lime
+    const Color(0xFF4BFF4B), // Green
+    const Color(0xFF4BFF9B), // Emerald
+    const Color(0xFF4BFFEB), // Cyan
+    const Color(0xFF4BB1FF), // Blue
+    const Color(0xFF4D4BFF), // Indigo
+    const Color(0xFF984BFF), // Purple
+    const Color(0xFFE84BFF), // Magenta
+    const Color(0xFFFF4BD4), // Pink
+    const Color(0xFFFF4B8D), // Rose
+    const Color(0xFFE1E1E1), // Light Grey
+    const Color(0xFFFF5252), // Material Red
+    const Color(0xFF90A4AE), // Blue Grey
+    const Color(0xFF78909C), // Steel
   ];
+
+  bool _isAdvancedOpen = false;
+  HabitPriority _priority = HabitPriority.medium;
 
   @override
   void dispose() {
@@ -107,405 +121,383 @@ class _AddHabitSheetState extends ConsumerState<AddHabitSheet> {
               child: ListView(
                 padding: const EdgeInsets.all(24),
                 children: [
-                  // Emoji & Color
-                  Row(
+                  // ─── Top Section ───
+                  Stack(
+                    alignment: Alignment.center,
                     children: [
-                      GestureDetector(
-                        onTap: _showEmojiPicker,
-                        child: Container(
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            color: _color.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: _color, width: 2),
-                          ),
-                          child: Center(
-                            child: Text(_emoji,
-                                style: const TextStyle(fontSize: 32)),
-                          ),
+                      // Background belt icons
+                      Opacity(
+                        opacity: 0.1,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: _emojis.take(15).map((e) {
+                            return Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 4),
+                              child:
+                                  Text(e, style: const TextStyle(fontSize: 20)),
+                            );
+                          }).toList(),
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: SizedBox(
-                          height: 60,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: _colors.length,
-                            separatorBuilder: (_, __) =>
-                                const SizedBox(width: 8),
-                            itemBuilder: (context, index) {
-                              final color = _colors[index];
-                              final isSelected = _color == color;
-                              return GestureDetector(
-                                onTap: () => setState(() => _color = color),
-                                child: Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: color,
-                                    shape: BoxShape.circle,
-                                    border: isSelected
-                                        ? Border.all(
-                                            color: Colors.white, width: 3)
-                                        : null,
-                                    boxShadow: isSelected
-                                        ? [
-                                            BoxShadow(
-                                              color:
-                                                  color.withValues(alpha: 0.4),
-                                              blurRadius: 8,
-                                              offset: const Offset(0, 4),
-                                            )
-                                          ]
-                                        : null,
-                                  ),
-                                  child: isSelected
-                                      ? const Icon(Icons.check,
-                                          color: Colors.white, size: 20)
-                                      : null,
-                                ),
-                              );
-                            },
+                      // Circular Icon Preview
+                      GestureDetector(
+                        onTap: () async {
+                          final selected = await Navigator.push<String>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  IconEmojiPicker(initialValue: _emoji),
+                            ),
+                          );
+                          if (selected != null) {
+                            setState(() => _emoji = selected);
+                          }
+                        },
+                        child: Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: isDark ? AppColors.cardDark : Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.2),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: buildIconEmojiDisplay(_emoji,
+                                size: 36, color: Colors.white),
                           ),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 24),
+
+                  // Emoji / Icon selector (horizontal)
+                  SizedBox(
+                    height: 50,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _emojis.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 12),
+                      itemBuilder: (context, index) {
+                        final e = _emojis[index];
+                        final isSelected = _emoji == e;
+                        return GestureDetector(
+                          onTap: () => setState(() => _emoji = e),
+                          child: Opacity(
+                            opacity: isSelected ? 1.0 : 0.3,
+                            child:
+                                Text(e, style: const TextStyle(fontSize: 26)),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 32),
 
                   // Name
                   TextFormField(
                     controller: _nameController,
-                    decoration: InputDecoration(
-                      labelText: 'Habit Name',
-                      hintText: 'e.g., Read for 30 mins',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      prefixIcon: const Icon(Icons.edit_rounded),
+                    decoration: const InputDecoration(
+                      labelText: 'Name',
+                      hintText: 'Enter habit name',
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
                     ),
-                    textCapitalization: TextCapitalization.sentences,
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Please enter a name';
-                      }
-                      return null;
-                    },
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    validator: (v) =>
+                        (v == null || v.isEmpty) ? 'Required' : null,
                   ),
+                  const Divider(),
                   const SizedBox(height: 16),
 
-                  // Frequency & Category
-                  Row(
-                    children: [
-                      Expanded(
-                        child: DropdownButtonFormField<HabitCategory>(
-                          initialValue: _category,
-                          decoration: InputDecoration(
-                            labelText: 'Category',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          items: HabitCategory.values.map((c) {
-                            return DropdownMenuItem(
-                              value: c,
-                              child: Text(c.name[0].toUpperCase() +
-                                  c.name.substring(1)),
-                            );
-                          }).toList(),
-                          onChanged: (val) => setState(() => _category = val!),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: DropdownButtonFormField<HabitFrequency>(
-                          initialValue: _frequency,
-                          decoration: InputDecoration(
-                            labelText: 'Frequency',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          items: HabitFrequency.values.map((f) {
-                            return DropdownMenuItem(
-                              value: f,
-                              child: Text(f.name[0].toUpperCase() +
-                                  f.name.substring(1)),
-                            );
-                          }).toList(),
-                          onChanged: (val) => setState(() => _frequency = val!),
-                        ),
-                      ),
-                    ],
+                  // Description
+                  TextFormField(
+                    controller: _descController,
+                    decoration: const InputDecoration(
+                      labelText: 'Description',
+                      hintText: 'Enter optional description',
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    validator: (v) => null,
                   ),
+                  const Divider(),
                   const SizedBox(height: 24),
 
-                  // Target Count
-                  const _SectionHeader(title: 'Daily Goal'),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: isDark ? AppColors.cardDark : AppColors.cardLight,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color:
-                            theme.colorScheme.onSurface.withValues(alpha: 0.1),
+                  // Color Section
+                  Text(
+                    'Color',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: _colors.map((color) {
+                      final isSelected = _color == color;
+                      return GestureDetector(
+                        onTap: () => setState(() => _color = color),
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: color,
+                            borderRadius: BorderRadius.circular(10),
+                            border: isSelected
+                                ? Border.all(color: Colors.white, width: 2)
+                                : null,
+                            boxShadow: isSelected
+                                ? [
+                                    BoxShadow(
+                                      color: color.withValues(alpha: 0.3),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 4),
+                                    )
+                                  ]
+                                : null,
+                          ),
+                          child: isSelected
+                              ? const Icon(Icons.check_rounded,
+                                  color: Colors.white, size: 20)
+                              : null,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 32),
+                  // ─── Advanced Options Toggle ───
+                  GestureDetector(
+                    onTap: () =>
+                        setState(() => _isAdvancedOpen = !_isAdvancedOpen),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Advanced Options',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.6),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Icon(
+                            _isAdvancedOpen
+                                ? Icons.keyboard_arrow_up_rounded
+                                : Icons.keyboard_arrow_down_rounded,
+                            size: 20,
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.6),
+                          ),
+                        ],
                       ),
                     ),
-                    child: Row(
+                  ),
+
+                  if (_isAdvancedOpen) ...[
+                    const SizedBox(height: 16),
+
+                    // Category
+                    DropdownButtonFormField<HabitCategory>(
+                      initialValue: _category,
+                      decoration: const InputDecoration(
+                        labelText: 'Category',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: HabitCategory.values.map((c) {
+                        return DropdownMenuItem(
+                          value: c,
+                          child: Text(
+                              c.name[0].toUpperCase() + c.name.substring(1)),
+                        );
+                      }).toList(),
+                      onChanged: (val) => setState(() => _category = val!),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Priority (Star Selector)
+                    PrioritySelectorWidget(
+                      selectedPriority: _priority,
+                      onPriorityChanged: (p) => setState(() => _priority = p),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Frequency
+                    DropdownButtonFormField<HabitFrequency>(
+                      initialValue: _frequency,
+                      decoration: const InputDecoration(
+                        labelText: 'Frequency',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: HabitFrequency.values.map((f) {
+                        return DropdownMenuItem(
+                          value: f,
+                          child: Text(
+                              f.name[0].toUpperCase() + f.name.substring(1)),
+                        );
+                      }).toList(),
+                      onChanged: (val) => setState(() => _frequency = val!),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Daily Target (+/-)
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Times per day', style: theme.textTheme.bodyLarge),
+                        const Text('Daily target',
+                            style: TextStyle(fontWeight: FontWeight.w500)),
                         Row(
                           children: [
                             IconButton(
                               onPressed: _targetCount > 1
                                   ? () => setState(() => _targetCount--)
                                   : null,
-                              icon: const Icon(Icons.remove_circle_outline),
+                              icon: const Icon(Icons.remove_rounded),
+                              visualDensity: VisualDensity.compact,
                             ),
-                            SizedBox(
-                              width: 32,
-                              child: Text(
-                                '$_targetCount',
-                                textAlign: TextAlign.center,
-                                style: theme.textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
+                            Text('$_targetCount',
+                                style: theme.textTheme.titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.bold)),
                             IconButton(
                               onPressed: () => setState(() => _targetCount++),
-                              icon: const Icon(Icons.add_circle_outline),
+                              icon: const Icon(Icons.add_rounded),
+                              visualDensity: VisualDensity.compact,
                             ),
+                            const SizedBox(width: 8),
+                            Text('time per day',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: theme.colorScheme.onSurface
+                                        .withValues(alpha: 0.6))),
                           ],
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
-                  // Timed Habit Toggle
-                  const _SectionHeader(title: 'Timer Mode'),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: isDark ? AppColors.cardDark : AppColors.cardLight,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color:
-                            theme.colorScheme.onSurface.withValues(alpha: 0.1),
-                      ),
+                    // Timer Mode
+                    const Text('Timer Mode',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Enable Timer'),
+                      subtitle: const Text('Start a countdown and enable DND'),
+                      value: _isTimed,
+                      onChanged: (val) async {
+                        if (val) {
+                          final dnd = ref.read(dndServiceProvider);
+                          final hasPermission = await dnd.checkPermissions();
+                          if (!hasPermission) {
+                            await dnd.requestPermissions();
+                          }
+                        }
+                        setState(() => _isTimed = val);
+                      },
                     ),
-                    child: Column(
-                      children: [
-                        SwitchListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: const Text('Enable Timer'),
-                          subtitle:
-                              const Text('Start a countdown and enable DND'),
-                          value: _isTimed,
-                          onChanged: (val) async {
-                            if (val) {
-                              final dnd = ref.read(dndServiceProvider);
-                              final hasPermission =
-                                  await dnd.checkPermissions();
-                              if (!hasPermission) {
-                                await dnd.requestPermissions();
-                              }
-                            }
-                            setState(() => _isTimed = val);
-                          },
+                    if (_isTimed) ...[
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _timerDurationController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'Duration (minutes)',
+                          border: OutlineInputBorder(),
                         ),
-                        if (_isTimed) ...[
-                          const Divider(),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('Duration',
-                                    style: theme.textTheme.bodyLarge),
-                                SizedBox(
-                                  width: 120,
-                                  child: TextFormField(
-                                    controller: _timerDurationController,
-                                    keyboardType: TextInputType.number,
-                                    textAlign: TextAlign.right,
-                                    decoration: InputDecoration(
-                                      suffixText: ' min',
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                              horizontal: 12, vertical: 8),
-                                    ),
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.digitsOnly,
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
                         ],
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Reminder
-                  const _SectionHeader(title: 'Notifications'),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: isDark ? AppColors.cardDark : AppColors.cardLight,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color:
-                            theme.colorScheme.onSurface.withValues(alpha: 0.1),
                       ),
-                    ),
-                    child: Column(
-                      children: [
-                        SwitchListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: const Text('Enable Reminder'),
-                          value: _reminderEnabled,
-                          onChanged: (val) async {
-                            if (val) {
-                              final granted = await ref
-                                  .read(notificationServiceProvider)
-                                  .requestPermissions();
-                              if (!granted && context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text('Permission denied')),
-                                );
-                                return;
-                              }
-                            }
-                            setState(() => _reminderEnabled = val);
-                          },
-                        ),
-                        if (_reminderEnabled) ...[
-                          const Divider(),
-                          ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            title: const Text('Time'),
-                            trailing: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: _color.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                _reminderTime.format(context),
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: _color,
-                                ),
-                              ),
-                            ),
-                            onTap: () async {
-                              final time = await showTimePicker(
-                                context: context,
-                                initialTime: _reminderTime,
-                              );
-                              if (time != null) {
-                                setState(() => _reminderTime = time);
-                              }
-                            },
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 32),
+                    ],
+                    const SizedBox(height: 24),
 
-                  // Submit Button
+                    // Reminders
+                    const Text('Reminders',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Enable Notifications'),
+                      value: _reminderEnabled,
+                      onChanged: (val) async {
+                        if (val) {
+                          // Show loading or just wait
+                          final granted = await ref
+                              .read(notificationServiceProvider)
+                              .requestPermissions();
+                          if (!granted && context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      'Please grant notification and alarm permissions in settings.')),
+                            );
+                            return;
+                          }
+                        }
+                        setState(() => _reminderEnabled = val);
+                      },
+                    ),
+                    if (_reminderEnabled) ...[
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('Time'),
+                        trailing: Text(
+                          _reminderTime.format(context),
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        onTap: () async {
+                          final time = await showTimePicker(
+                            context: context,
+                            initialTime: _reminderTime,
+                          );
+                          if (time != null) {
+                            setState(() => _reminderTime = time);
+                          }
+                        },
+                      ),
+                    ],
+                  ],
+                  const SizedBox(height: 48),
+
+                  // Save Button
                   SizedBox(
                     width: double.infinity,
-                    height: 56,
+                    height: 54,
                     child: FilledButton(
                       onPressed: _submit,
                       style: FilledButton.styleFrom(
-                        backgroundColor: _color,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                       child: const Text(
-                        'Create Habit',
+                        'Save',
                         style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  void _showEmojiPicker() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => Container(
-        height: 300,
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            const Text('Pick an Emoji',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            Expanded(
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 5,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                ),
-                itemCount: _emojis.length,
-                itemBuilder: (context, index) {
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() => _emoji = _emojis[index]);
-                      context.pop();
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: _emoji == _emojis[index]
-                            ? AppColors.primary.withValues(alpha: 0.1)
-                            : null,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Center(
-                        child: Text(_emojis[index],
-                            style: const TextStyle(fontSize: 32)),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -525,7 +517,7 @@ class _AddHabitSheetState extends ConsumerState<AddHabitSheet> {
             frequency: _frequency,
             colorHex: colorHex,
             targetCount: _targetCount,
-            priority: _priority,
+            priority: _priority.value,
             description: _descController.text.trim().isEmpty
                 ? null
                 : _descController.text.trim(),
@@ -550,22 +542,5 @@ class _AddHabitSheetState extends ConsumerState<AddHabitSheet> {
         );
       }
     }
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  final String title;
-  const _SectionHeader({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      title,
-      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-            color:
-                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-          ),
-    );
   }
 }

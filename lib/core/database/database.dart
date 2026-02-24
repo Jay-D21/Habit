@@ -151,6 +151,26 @@ class AppDatabase extends _$AppDatabase {
     return query.get();
   }
 
+  /// Watch completions for a specific habit and date range (reactive stream)
+  Stream<List<HabitCompletionEntity>> watchCompletionsForHabit(
+    int habitId, {
+    DateTime? startDate,
+    DateTime? endDate,
+  }) {
+    var query = select(habitCompletions)
+      ..where((c) => c.habitId.equals(habitId));
+
+    if (startDate != null && endDate != null) {
+      query.where((c) => c.date.isBetweenValues(startDate, endDate));
+    } else if (startDate != null) {
+      query.where((c) => c.date.isBiggerOrEqualValue(startDate));
+    } else if (endDate != null) {
+      query.where((c) => c.date.isSmallerOrEqualValue(endDate));
+    }
+
+    return query.watch();
+  }
+
   /// Get completion for specific habit and date
   Future<HabitCompletionEntity?> getCompletionForDate(
       int habitId, DateTime date) {
@@ -189,6 +209,27 @@ class AppDatabase extends _$AppDatabase {
           ..where((c) => c.date.isBiggerOrEqualValue(startOfDay))
           ..where((c) => c.date.isSmallerThanValue(endOfDay)))
         .go();
+  }
+
+  /// Watch all completions for a specific date (reactive stream)
+  Stream<List<HabitCompletionEntity>> watchCompletionsForDate(DateTime date) {
+    return (select(habitCompletions)..where((c) => c.date.equals(date)))
+        .watch();
+  }
+
+  /// Watch all completions for today (reactive stream)
+  Stream<List<HabitCompletionEntity>> watchTodayCompletions() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    return watchCompletionsForDate(today);
+  }
+
+  /// Watch all completions inside a date range (reactive stream)
+  Stream<List<HabitCompletionEntity>> watchCompletionsForDateRange(
+      DateTime startDate, DateTime endDate) {
+    return (select(habitCompletions)
+          ..where((c) => c.date.isBetweenValues(startDate, endDate)))
+        .watch();
   }
 
   /// Get all completions for today

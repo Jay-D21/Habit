@@ -114,7 +114,6 @@ class HabitNotifier extends Notifier<void> {
           isStreakMaintain: isStreakMaintain);
     }
 
-    ref.invalidate(todayCompletionsProvider);
     ref.invalidate(overallStreakProvider);
     // Invalidate user progress provider if it existed
     ref.invalidate(userProgressProvider);
@@ -124,7 +123,6 @@ class HabitNotifier extends Notifier<void> {
   Future<void> uncompleteHabit(int habitId) async {
     final repository = ref.read(habitRepositoryProvider);
     await repository.uncompleteHabit(habitId);
-    ref.invalidate(todayCompletionsProvider);
     ref.invalidate(overallStreakProvider);
   }
 
@@ -158,10 +156,6 @@ class HabitNotifier extends Notifier<void> {
     }
 
     // Refresh data
-    ref.invalidate(todayCompletionsProvider);
-    ref.invalidate(habitMonthCompletionsProvider);
-    // Also invalidate the specific provider used by habit cards if needed,
-    // though the watch should handle it if params match.
   }
 }
 
