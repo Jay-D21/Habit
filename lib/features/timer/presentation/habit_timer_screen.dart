@@ -7,6 +7,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/providers/habit_notifier.dart';
 import '../../../../core/providers/habit_providers.dart';
+import '../../../../shared/widgets/icon_emoji_picker.dart';
 import '../../timer/providers/habit_timer_providers.dart';
 
 class HabitTimerScreen extends ConsumerStatefulWidget {
@@ -142,9 +143,9 @@ class _HabitTimerScreenState extends ConsumerState<HabitTimerScreen>
                       Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
+                          buildIconEmojiDisplay(
                             habit.emoji,
-                            style: const TextStyle(fontSize: 64),
+                            size: 64,
                           ),
                           const SizedBox(height: 16),
                           Text(

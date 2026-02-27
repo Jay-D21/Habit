@@ -7,6 +7,7 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../../core/providers/habit_providers.dart';
 import '../../../../core/providers/habit_notifier.dart';
+import '../../../shared/widgets/icon_emoji_picker.dart';
 import '../data/models/habit.dart';
 import 'widgets/add_habit_sheet.dart';
 import '../../../core/services/ad_service.dart';
@@ -332,7 +333,7 @@ class _HabitDayRow extends ConsumerWidget {
             width: 110,
             child: Row(
               children: [
-                Text(habit.emoji, style: const TextStyle(fontSize: 20)),
+                buildIconEmojiDisplay(habit.emoji, size: 20),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
@@ -522,7 +523,7 @@ class _HabitMonthGrid extends ConsumerWidget {
           // Habit label
           Row(
             children: [
-              Text(habit.emoji, style: const TextStyle(fontSize: 18)),
+              buildIconEmojiDisplay(habit.emoji, size: 18),
               const SizedBox(width: 8),
               Text(
                 habit.name,
