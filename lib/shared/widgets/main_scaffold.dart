@@ -22,6 +22,8 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(driveBackupServiceProvider).autoBackupOrSync();
       ref.read(adFrequencyProvider.notifier).onAppOpen();
+      // Start the 5-minute session timer for rewarded interstitials
+      ref.read(sessionAdTimerProvider);
     });
   }
 

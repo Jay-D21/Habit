@@ -9,7 +9,7 @@ plugins {
 android {
     namespace = "com.habittracker.habit_tracker"
     compileSdk = 36
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
         // Enable core library desugaring for Java 8+ APIs
@@ -23,27 +23,25 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.habittracker.habit_tracker"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        
+
         // Required for flutter_local_notifications
         multiDexEnabled = true
     }
 
     buildTypes {
         release {
-            // Disabled minification due to R8 conflicts with Google Credentials
-            // Size reduction achieved via split APKs instead
-            isMinifyEnabled = false
-            isShrinkResources = false
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            // R8 minification + resource shrinking for smaller APK
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
             signingConfig = signingConfigs.getByName("debug")
         }
     }
@@ -53,6 +51,13 @@ android {
         abortOnError = false
         checkReleaseBuilds = false
     }
+
+    // Skip debug symbol stripping (cmdline-tools not installed)
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
 }
 
 flutter {
@@ -61,5 +66,7 @@ flutter {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    // Required by smart_auth plugin for Credential Manager API
+    implementation("com.google.android.gms:play-services-auth:21.3.0")
 }
 

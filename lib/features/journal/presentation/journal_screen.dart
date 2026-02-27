@@ -127,6 +127,12 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
             ),
             const SizedBox(height: AppTheme.spacingSm),
 
+            // Native Ad
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
+              child: NativeAdWidget(),
+            ),
+
             // Banner Ad
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),

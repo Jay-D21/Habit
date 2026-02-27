@@ -275,6 +275,8 @@ class _OverviewTab extends ConsumerWidget {
               .fadeIn(delay: 200.ms),
           const SizedBox(height: 24),
 
+          const NativeAdWidget(),
+
           const BannerAdWidget(),
           const SizedBox(height: 80),
         ],

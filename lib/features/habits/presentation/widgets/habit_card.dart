@@ -10,6 +10,7 @@ import '../../../../core/providers/habit_notifier.dart';
 import '../../data/models/habit.dart';
 import '../../../../core/services/ad_service.dart';
 import '../../../../core/models/priority_enum.dart';
+import '../../../../shared/widgets/icon_emoji_picker.dart';
 
 class HabitCard extends ConsumerStatefulWidget {
   final Habit habit;
@@ -112,9 +113,9 @@ class _HabitCardState extends ConsumerState<HabitCard> {
               child: Stack(
                 children: [
                   Center(
-                    child: Text(
+                    child: buildIconEmojiDisplay(
                       widget.habit.emoji,
-                      style: TextStyle(fontSize: widget.compact ? 22 : 26),
+                      size: widget.compact ? 22 : 26,
                     ),
                   ),
                   if (widget.habit.isTimed)

@@ -23,8 +23,10 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    // Trigger app-open interstitial (runs after first frame)
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Initialize App Open Ad (lifecycle observer registered by provider)
+      ref.read(appOpenAdManagerProvider);
+      // Trigger app-open interstitial frequency logic
       ref.read(adFrequencyProvider.notifier).onAppOpen();
     });
   }
@@ -33,6 +35,13 @@ class _HabitTrackerAppState extends ConsumerState<HabitTrackerApp>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      ref.read(appOpenAdManagerProvider).showAdIfAvailable();
+    }
   }
 
   /// Intercepts the Android system back button at the platform level.

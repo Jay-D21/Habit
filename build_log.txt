@@ -1,0 +1,62 @@
+﻿Running Gradle task 'assembleRelease'...                        
+flutter : ERROR: Missing classes detected while running R8. Please add the missing classes or apply 
+additional keep rules that are generated in 
+C:\Users\ADMIN\Desktop\Habit\build\app\outputs\mapping\release\missing_rules.txt.
+At line:1 char:1
++ flutter build apk --release --no-tree-shake-icons --split-per-abi 2>& ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ERROR: Missing ...sing_rules.txt.:String) [], RemoteExc 
+   eption
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ERROR: R8: Missing class com.google.android.gms.auth.api.credentials.Credential$Builder (referenced 
+from: com.google.android.gms.auth.api.credentials.Credential 
+fman.ge.smart_auth.SmartAuthPlugin.maybeBuildCredential(io.flutter.plugin.common.MethodCall, 
+io.flutter.plugin.common.MethodChannel$Result))
+Missing class com.google.android.gms.auth.api.credentials.Credential (referenced from: 
+java.util.HashMap fman.ge.smart_auth.SmartAuthPlugin.credentialToMap(com.google.android.gms.auth.api.
+credentials.Credential) and 8 other contexts)
+Missing class com.google.android.gms.auth.api.credentials.CredentialPickerConfig$Builder (referenced 
+from: void fman.ge.smart_auth.SmartAuthPlugin.requestHint(io.flutter.plugin.common.MethodCall, 
+io.flutter.plugin.common.MethodChannel$Result))
+Missing class com.google.android.gms.auth.api.credentials.CredentialPickerConfig (referenced from: 
+void fman.ge.smart_auth.SmartAuthPlugin.requestHint(io.flutter.plugin.common.MethodCall, 
+io.flutter.plugin.common.MethodChannel$Result))
+Missing class com.google.android.gms.auth.api.credentials.CredentialRequest$Builder (referenced 
+from: void fman.ge.smart_auth.SmartAuthPlugin.getCredential(io.flutter.plugin.common.MethodCall, 
+io.flutter.plugin.common.MethodChannel$Result))
+Missing class com.google.android.gms.auth.api.credentials.CredentialRequest (referenced from: void 
+fman.ge.smart_auth.SmartAuthPlugin.getCredential(io.flutter.plugin.common.MethodCall, 
+io.flutter.plugin.common.MethodChannel$Result))
+Missing class com.google.android.gms.auth.api.credentials.CredentialRequestResponse (referenced 
+from: void fman.ge.smart_auth.SmartAuthPlugin.getCredential$lambda$0(io.flutter.plugin.common.MethodC
+hannel$Result, fman.ge.smart_auth.SmartAuthPlugin, boolean, com.google.android.gms.tasks.Task))
+Missing class com.google.android.gms.auth.api.credentials.Credentials (referenced from: void 
+fman.ge.smart_auth.SmartAuthPlugin.deleteCredential(io.flutter.plugin.common.MethodCall, 
+io.flutter.plugin.common.MethodChannel$Result) and 3 other contexts)
+Missing class com.google.android.gms.auth.api.credentials.CredentialsClient (referenced from: void 
+fman.ge.smart_auth.SmartAuthPlugin.deleteCredential(io.flutter.plugin.common.MethodCall, 
+io.flutter.plugin.common.MethodChannel$Result) and 3 other contexts)
+Missing class com.google.android.gms.auth.api.credentials.HintRequest$Builder (referenced from: void 
+fman.ge.smart_auth.SmartAuthPlugin.requestHint(io.flutter.plugin.common.MethodCall, 
+io.flutter.plugin.common.MethodChannel$Result))
+Missing class com.google.android.gms.auth.api.credentials.HintRequest (referenced from: void 
+fman.ge.smart_auth.SmartAuthPlugin.requestHint(io.flutter.plugin.common.MethodCall, 
+io.flutter.plugin.common.MethodChannel$Result))
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:minifyReleaseWithR8'.
+> A failure occurred while executing com.android.build.gradle.internal.tasks.R8Task$R8Runnable
+   > Compilation failed to complete
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 44s
+Running Gradle task 'assembleRelease'...                           45.1s
+Gradle task assembleRelease failed with exit code 1

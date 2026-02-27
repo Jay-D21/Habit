@@ -157,9 +157,25 @@ class HabitNotifier extends Notifier<void> {
       await repository.uncompleteHabitForDate(habitId, date);
     } else {
       await repository.completeHabitForDate(habitId, date);
+
+      // Award XP
+      final habit = await repository.getHabitById(habitId);
+      if (habit != null) {
+        final gamificationService = ref.read(gamificationServiceProvider);
+        final streak = await repository.calculateStreak(habitId);
+        final isStreakMaintain = streak > 1;
+
+        await gamificationService.addXPForHabit(habit,
+            isStreakMaintain: isStreakMaintain);
+      }
+
+      // Trigger interstitial ad after every N habit completions
+      ref.read(adFrequencyProvider.notifier).onHabitCompleted();
     }
 
     // Refresh data
+    ref.invalidate(overallStreakProvider);
+    ref.invalidate(userProgressProvider);
   }
 }
 

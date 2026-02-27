@@ -8,6 +8,7 @@ import '../../../core/providers/habit_providers.dart';
 import '../../../core/providers/habit_notifier.dart';
 import '../../../core/providers/notification_providers.dart';
 import '../../../core/services/ad_service.dart';
+import '../../../shared/widgets/icon_emoji_picker.dart';
 import '../../timer/providers/habit_timer_providers.dart';
 import '../data/models/habit.dart';
 
@@ -82,8 +83,7 @@ class HabitDetailScreen extends ConsumerWidget {
                         ),
                         child: Column(
                           children: [
-                            Text(habit.emoji,
-                                style: const TextStyle(fontSize: 64)),
+                            buildIconEmojiDisplay(habit.emoji, size: 64),
                             const SizedBox(height: AppTheme.spacingMd),
                             Text(
                               habit.name,
@@ -268,7 +268,7 @@ class HabitDetailScreen extends ConsumerWidget {
                 Navigator.of(dialogContext).pop();
               }
               if (context.mounted) {
-                context.go('/habits');
+                context.go('/home');
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('${habit.name} deleted')),
                 );

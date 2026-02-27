@@ -13,6 +13,7 @@ import '../../../core/providers/gamification_providers.dart';
 import '../../../core/services/ad_service.dart';
 import '../../habits/data/models/habit.dart';
 import '../../habits/presentation/widgets/add_habit_sheet.dart';
+import '../../../shared/widgets/icon_emoji_picker.dart';
 // Let's check HomeScreen usage. Line 404: todayProgressProvider is used, but TodayHabitsSection?
 // Line 332: return const _EmptyState();
 // Wait, is TodayHabitsSection used in home_screen.dart?
@@ -202,6 +203,57 @@ class HomeScreen extends ConsumerWidget {
                   ),
                   const SizedBox(width: 12),
 
+                  // Double XP (Rewarded Ad)
+                  GestureDetector(
+                    onTap: () async {
+                      final adManager = ref.read(rewardedAdManagerProvider);
+                      if (!adManager.isReady) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content:
+                                  Text('Ad loading, try again shortly...')),
+                        );
+                        return;
+                      }
+                      final reward = await adManager.showAd();
+                      if (reward != null && context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content:
+                                Text('🎉 Bonus XP earned! Keep crushing it!'),
+                            backgroundColor: Color(0xFF6C5CE7),
+                          ),
+                        );
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('🎁', style: TextStyle(fontSize: 12)),
+                          SizedBox(width: 4),
+                          Text(
+                            '2x XP',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+
                   // Add habit
                   GestureDetector(
                     onTap: () {
@@ -308,29 +360,50 @@ class HomeScreen extends ConsumerWidget {
               child: habitsAsync.when(
                 data: (habits) {
                   if (habits.isEmpty) return const _EmptyState();
+
+                  // Insert native ad after 2nd habit, or at the end if fewer
+                  final nativeAdIndex = habits.length >= 2 ? 2 : habits.length;
+                  const extraItems = 3; // chart + banner + native
+                  final totalItems = habits.length + extraItems;
+
                   return ListView.builder(
                     padding: const EdgeInsets.symmetric(
                         horizontal: AppTheme.spacingLg),
-                    itemCount: habits.length + 2, // +1 chart, +1 ad
+                    itemCount: totalItems,
                     itemBuilder: (context, index) {
+                      // Native ad slot after 3rd habit
+                      if (nativeAdIndex >= 0 && index == nativeAdIndex) {
+                        return const NativeAdWidget(
+                          adUnitId: AdConfig.nativeAdUnitId1,
+                          height: 120,
+                        );
+                      }
+
+                      // Adjust index for items after the native ad
+                      final adjustedIndex =
+                          (nativeAdIndex >= 0 && index > nativeAdIndex)
+                              ? index - 1
+                              : index;
+
                       // Habit rows
-                      if (index < habits.length) {
+                      if (adjustedIndex < habits.length) {
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 8),
-                          child: _HabitRow(habit: habits[index], days: days),
+                          child: _HabitRow(
+                              habit: habits[adjustedIndex], days: days),
                         )
                             .animate()
-                            .fadeIn(delay: (50 * index).ms)
+                            .fadeIn(delay: (50 * adjustedIndex).ms)
                             .slideX(begin: 0.1, duration: 200.ms);
                       }
                       // Weekly chart
-                      if (index == habits.length) {
+                      if (adjustedIndex == habits.length) {
                         return Padding(
                           padding: const EdgeInsets.only(top: 16, bottom: 12),
                           child: _WeeklyChart(isDark: isDark),
                         ).animate().fadeIn(delay: 200.ms);
                       }
-                      // Ad
+                      // Banner ad
                       return const Padding(
                         padding: EdgeInsets.only(bottom: 80),
                         child: BannerAdWidget(),
@@ -384,6 +457,13 @@ class _WeeklyChart extends ConsumerWidget {
                 LineChartData(
                   minY: 0,
                   maxY: 100,
+                  lineTouchData: LineTouchData(
+                    touchTooltipData: LineTouchTooltipData(
+                      tooltipBgColor: isDark
+                          ? theme.colorScheme.surfaceContainerHighest
+                          : theme.colorScheme.surface,
+                    ),
+                  ),
                   gridData: FlGridData(
                     show: true,
                     drawVerticalLine: false,
@@ -631,7 +711,7 @@ class _HabitRow extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Center(
-                child: Text(habit.emoji, style: const TextStyle(fontSize: 20)),
+                child: buildIconEmojiDisplay(habit.emoji, size: 20),
               ),
             ),
             const SizedBox(width: 12),

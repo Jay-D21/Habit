@@ -216,6 +216,8 @@ class _HabitsContent extends StatelessWidget {
                 child: _HabitDayRow(habit: habit, days: days),
               )),
 
+          const NativeAdWidget(),
+
           const SizedBox(height: AppTheme.spacingXl),
 
           // ─── Month Box Grid Section ───

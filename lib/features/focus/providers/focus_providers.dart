@@ -3,9 +3,9 @@ import 'package:habit_tracker/core/database/database.dart';
 import 'package:habit_tracker/main.dart'; // for database, notificationService
 import '../services/focus_timer_service.dart';
 
-// Stream of settings
-final focusSettingsProvider = StreamProvider<FocusSettingsData>((ref) {
-  return database.select(database.focusSettings).watchSingle();
+// Stream of settings (nullable when no row exists yet)
+final focusSettingsProvider = StreamProvider<FocusSettingsData?>((ref) {
+  return database.select(database.focusSettings).watchSingleOrNull();
 });
 
 // Timer Service Instance
@@ -16,7 +16,9 @@ final focusTimerServiceProvider = Provider<FocusTimerService>((ref) {
   // Listen to settings changes and update service
   final settingsAsync = ref.watch(focusSettingsProvider);
   settingsAsync.whenData((settings) {
-    service.updateSettings(settings);
+    if (settings != null) {
+      service.updateSettings(settings);
+    }
   });
 
   // Handle timer completion (e.g., play sound)
