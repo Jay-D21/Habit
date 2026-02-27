@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 
 class DndService {
   static const MethodChannel _channel =
-      MethodChannel('com.habittracker.habit_tracker/dnd');
+      MethodChannel('com.jaydeore.habittracker/dnd');
 
   Future<bool> checkPermissions() async {
     try {

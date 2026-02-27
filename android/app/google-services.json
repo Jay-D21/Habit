@@ -38,7 +38,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:416746728359:android:1805302c432f06fefaa482",
         "android_client_info": {
-          "package_name": "com.habittracker.habit_tracker"
+          "package_name": "com.jaydeore.habittracker"
         }
       },
       "oauth_client": [

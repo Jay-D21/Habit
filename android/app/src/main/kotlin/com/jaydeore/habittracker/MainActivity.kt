@@ -1,4 +1,4 @@
-package com.habittracker.habit_tracker
+package com.jaydeore.habittracker
 
 import android.app.NotificationManager
 import android.content.Context
@@ -10,7 +10,7 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity: FlutterActivity() {
-    private val CHANNEL = "com.habittracker.habit_tracker/dnd"
+    private val CHANNEL = "com.jaydeore.habittracker/dnd"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
