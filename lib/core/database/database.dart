@@ -31,7 +31,25 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (Migrator m) => m.createAll(),
+        onCreate: (Migrator m) async {
+          await m.createAll();
+
+          // Seed default focus settings
+          await into(focusSettings).insert(
+            const FocusSettingsCompanion(),
+          );
+
+          // Seed default diary
+          await into(diaries).insert(
+            DiariesCompanion.insert(
+              name: 'My Journal',
+              description: const Value('General entries'),
+              color: 0xFF2196F3, // Blue
+              iconCodePoint: 0xe0d0,
+              createdAt: DateTime.now(),
+            ),
+          );
+        },
         onUpgrade: (Migrator m, int from, int to) async {
           if (from < 2) {
             await m.addColumn(habits, habits.priority);

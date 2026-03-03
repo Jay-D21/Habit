@@ -18,6 +18,11 @@ final focusTimerServiceProvider = Provider<FocusTimerService>((ref) {
   settingsAsync.whenData((settings) {
     if (settings != null) {
       service.updateSettings(settings);
+    } else {
+      // Fallback: Ensure default settings exist if the row is somehow missing
+      database
+          .into(database.focusSettings)
+          .insert(const FocusSettingsCompanion());
     }
   });
 

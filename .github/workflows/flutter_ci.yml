@@ -36,6 +36,9 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Inject Dummy Amplify Config
+        run: echo "const amplifyconfig = '''{}''';" > lib/amplifyconfiguration.dart
+
       - name: Get packages
         run: flutter pub get
 
